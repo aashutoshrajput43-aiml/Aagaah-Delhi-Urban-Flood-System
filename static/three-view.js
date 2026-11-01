@@ -822,6 +822,12 @@ const ThreeEngine = {
   // RENDER & ANIMATION LOOP
   // ==========================================
   animate() {
+    // Only animate when 3D container is actually visible on screen
+    const container = document.getElementById('three-container') || this.container;
+    if (!container || container.offsetParent === null || container.classList.contains('hidden') || container.style.display === 'none') {
+      this.animId = null;
+      return;
+    }
     this.animId = requestAnimationFrame(() => this.animate());
 
     const delta = this.clock ? this.clock.getDelta() : 0.016;
@@ -1073,6 +1079,12 @@ const HydroRadarEngine2D = {
   },
 
   animate() {
+    // Only render when radar canvas is mounted and visible
+    const canvas = document.getElementById('canvas-2d-hydro-radar') || this.canvas;
+    if (!canvas || canvas.offsetParent === null) {
+      this.animId = null;
+      return;
+    }
     this.animId = requestAnimationFrame(() => this.animate());
     this.time += 0.016;
     this.angle = (this.angle + 0.024) % (Math.PI * 2);

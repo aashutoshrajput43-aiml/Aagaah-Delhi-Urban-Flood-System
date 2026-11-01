@@ -132,7 +132,12 @@ const App = {
       center: [28.6300, 77.2150],
       zoom: 11,
       zoomControl: true,
-      attributionControl: true
+      attributionControl: true,
+      preferCanvas: true,
+      updateWhenIdle: true,
+      updateWhenZooming: false,
+      fadeAnimation: true,
+      zoomAnimation: true
     });
 
     // Basemap: OpenStreetMap Standard Tiles (exact colors and typography from video)
@@ -210,21 +215,19 @@ const App = {
     updateSize();
     window.addEventListener('resize', updateSize);
 
-    // Particle pool for realistic falling rain
-    const maxDrops = 750;
+    // Lightweight, Hardware-Accelerated Rain Particle Pool (Zero GC allocation)
+    const maxDrops = 130;
     this.mapRainDrops = [];
     for (let i = 0; i < maxDrops; i++) {
       this.mapRainDrops.push({
         x: Math.random() * (canvas.width || 1400) + 100,
         y: Math.random() * (canvas.height || 900),
-        l: Math.random() * 16 + 12,
-        xs: -1.8 - Math.random() * 1.6, // Wind slant
-        ys: 13 + Math.random() * 11,
-        alpha: 0.35 + Math.random() * 0.55
+        l: Math.random() * 14 + 10,
+        xs: -1.5 - Math.random() * 1.2,
+        ys: 12 + Math.random() * 9
       });
     }
 
-    // Impact splash ripples pool
     this.rainRipples = [];
 
     const animate2DRain = () => {
@@ -236,7 +239,6 @@ const App = {
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      // Real-Time Radar mode is dry across Delhi (0.0 mm/h) -> completely clear sky
       if (this.rainMode === 'radar' || this.currentRainfall <= 0) {
         this.rainRipples = [];
         return;
@@ -246,66 +248,59 @@ const App = {
       const isPaused = !this.simPlaying && this.simPaused;
       const speedMult = this.simPlaying ? 1.35 : 0.95;
 
-      // Draw and advance surface splash ripples
-      for (let r = this.rainRipples.length - 1; r >= 0; r--) {
-        const rip = this.rainRipples[r];
-        ctx.beginPath();
-        ctx.ellipse(rip.x, rip.y, rip.rx, rip.ry, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(56, 189, 248, ${rip.opacity})`;
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
+      // 1. Draw splash ripples with single stroke batch
+      if (this.rainRipples.length > 0) {
+        ctx.lineWidth = 1.0;
+        for (let r = this.rainRipples.length - 1; r >= 0; r--) {
+          const rip = this.rainRipples[r];
+          ctx.beginPath();
+          ctx.ellipse(rip.x, rip.y, rip.rx, rip.ry, 0, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(56, 189, 248, ${rip.opacity})`;
+          ctx.stroke();
 
-        if (!isPaused) {
-          rip.rx += 1.2;
-          rip.ry += 0.5;
-          rip.opacity -= 0.055;
-        }
-
-        if (rip.opacity <= 0 || rip.rx > rip.maxR) {
-          this.rainRipples.splice(r, 1);
+          if (!isPaused) {
+            rip.rx += 1.2;
+            rip.ry += 0.5;
+            rip.opacity -= 0.06;
+          }
+          if (rip.opacity <= 0 || rip.rx > rip.maxR) {
+            this.rainRipples.splice(r, 1);
+          }
         }
       }
 
-      // Dynamic active drop count based on mm scenario (10mm: ~130 drops, 100mm: 750 drops)
-      let activeCount = Math.floor(110 + intensity * 640);
-      activeCount = Math.min(this.mapRainDrops.length, activeCount);
+      // 2. Batch ALL rain lines into ONE single draw call (Zero gradient allocation!)
+      const activeCount = Math.min(this.mapRainDrops.length, Math.floor(40 + intensity * 90));
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.42)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
 
-      // Render rain streaks with glowing tips
       for (let i = 0; i < activeCount; i++) {
         const p = this.mapRainDrops[i];
-
-        const grad = ctx.createLinearGradient(p.x, p.y, p.x + p.xs, p.y + p.l);
-        grad.addColorStop(0, `rgba(186, 230, 253, ${p.alpha * 0.15})`);
-        grad.addColorStop(1, `rgba(56, 189, 248, ${p.alpha * (0.45 + intensity * 0.5)})`);
-
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 1.1 + intensity * 0.9;
-        ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x + p.xs, p.y + p.l);
-        ctx.stroke();
 
         if (!isPaused) {
           p.x += p.xs * speedMult;
           p.y += p.ys * speedMult;
 
           if (p.y > h || p.x < -20) {
-            if (this.rainRipples.length < 45 && Math.random() < (0.15 + intensity * 0.35)) {
+            if (this.rainRipples.length < 15 && Math.random() < 0.25) {
               this.rainRipples.push({
                 x: p.x,
-                y: Math.min(h - 5, p.y - Math.random() * 40),
-                rx: 1.5,
-                ry: 0.6,
-                maxR: 9 + intensity * 7,
-                opacity: 0.65 + intensity * 0.25
+                y: Math.min(h - 5, p.y - Math.random() * 20),
+                rx: 1.2,
+                ry: 0.5,
+                maxR: 8,
+                opacity: 0.6
               });
             }
-
-            p.x = Math.random() * (w + 120);
-            p.y = -15 - Math.random() * 25;
+            p.x = Math.random() * (w + 80);
+            p.y = -10 - Math.random() * 20;
           }
         }
       }
+      ctx.stroke(); // Single GPU stroke for all drops!
     };
     animate2DRain();
   },

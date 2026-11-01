@@ -4103,3 +4103,27 @@ body {
   justify-content: center;
   pointer-events: none;
 }
+
+/* ===================================================================
+   GPU HARDWARE ACCELERATION & ULTRA-SMOOTH OPERABILITY
+   =================================================================== */
+#map-container,
+.map-viewport-card,
+.sidebar,
+.bottom-analytics-row,
+.ai-optimizer-card {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.sim-slider-bar,
+.sim-timeline-slider {
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.sim-slider-bar:active,
+.sim-timeline-slider:active {
+  cursor: grabbing;
+}
