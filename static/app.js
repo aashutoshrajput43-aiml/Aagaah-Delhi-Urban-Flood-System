@@ -1,3 +1,8 @@
+// Global API Base URL (Relative on Render/Localhost, Render Backend URL on GitHub Pages)
+window.API_BASE = (window.location.hostname.includes('github.io'))
+  ? 'https://aagaah-delhi-flood-system.onrender.com'
+  : '';
+
 /**
  * Delhi Urban Flood Nowcasting System - Client Application
  * Full GIS Dashboard, Simulation Controller, Leaflet Engine, Routing,
@@ -430,11 +435,11 @@ const App = {
   async fetchDatasets() {
     try {
       const [hotspotsRes, drainsRes, nodesRes, contoursRes, dangerRes] = await Promise.all([
-        fetch('/api/gis/hotspots').then(r => r.json()),
-        fetch('/api/gis/drains').then(r => r.json()),
-        fetch('/api/gis/nodes').then(r => r.json()),
-        fetch('/api/gis/contours').then(r => r.json()),
-        fetch(`/api/gis/danger-zones?scenario=${this.currentRainfall}`).then(r => r.json())
+        fetch(`${window.API_BASE}/api/gis/hotspots`).then(r => r.json()),
+        fetch(`${window.API_BASE}/api/gis/drains`).then(r => r.json()),
+        fetch(`${window.API_BASE}/api/gis/nodes`).then(r => r.json()),
+        fetch(`${window.API_BASE}/api/gis/contours`).then(r => r.json()),
+        fetch(`${window.API_BASE}/api/gis/danger-zones?scenario=${this.currentRainfall}`).then(r => r.json())
       ]);
 
       this.hotspotsData = hotspotsRes.hotspots || [];
@@ -452,7 +457,7 @@ const App = {
     if (coordsEl) coordsEl.textContent = `${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E`;
 
     try {
-      const res = await fetch(`/api/hydro/inspect?lat=${lat}&lng=${lng}&scenario=${this.currentRainfall}`);
+      const res = await fetch(`${window.API_BASE}/api/hydro/inspect?lat=${lat}&lng=${lng}&scenario=${this.currentRainfall}`);
       const data = await res.json();
 
       document.getElementById('val-hydro-elevation').textContent = `${data.elevation_dem_m} m`;
@@ -1497,7 +1502,7 @@ const App = {
         }
 
         try {
-          const res = await fetch('/api/radar/realtime');
+          const res = await fetch(`${window.API_BASE}/api/radar/realtime`);
           const data = await res.json();
           const rEl = document.getElementById('radar-timestamp');
           if (rEl) rEl.textContent = data.last_update;
@@ -1546,7 +1551,7 @@ const App = {
     if (btnRefreshRadar) {
       btnRefreshRadar.addEventListener('click', async () => {
         try {
-          const res = await fetch('/api/radar/realtime');
+          const res = await fetch(`${window.API_BASE}/api/radar/realtime`);
           const data = await res.json();
           const rEl = document.getElementById('radar-timestamp');
           if (rEl) rEl.textContent = data.last_update;
@@ -1691,7 +1696,7 @@ const App = {
   async triggerSimulationSync(mm, horizon, signal = null) {
     try {
       const fetchOpts = signal ? { signal } : {};
-      const res = await fetch(`/api/simulation/current?scenario=${mm}&horizon=${horizon}`, fetchOpts);
+      const res = await fetch(`${window.API_BASE}/api/simulation/current?scenario=${mm}&horizon=${horizon}`, fetchOpts);
       if (!res.ok) return;
       const data = await res.json();
 
@@ -2004,7 +2009,7 @@ const App = {
     };
 
     try {
-      const res = await fetch('/api/routes/flood-safe', {
+      const res = await fetch(`${window.API_BASE}/api/routes/flood-safe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -3241,7 +3246,7 @@ const App = {
         btnSubmit.disabled = true;
 
         try {
-          const res = await fetch('/api/reports', {
+          const res = await fetch(`${window.API_BASE}/api/reports`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3353,7 +3358,7 @@ const App = {
 
   async fetchIncidentReports() {
     try {
-      const res = await fetch('/api/reports');
+      const res = await fetch(`${window.API_BASE}/api/reports`);
       const data = await res.json();
       if (data && data.reports && data.reports.length > 0) {
         const tbody = document.getElementById('tbody-incident-reports');
@@ -3374,7 +3379,7 @@ const App = {
   // ==========================================
   async fetchInfrastructureAssets() {
     try {
-      const res = await fetch('/api/infrastructure/assets');
+      const res = await fetch(`${window.API_BASE}/api/infrastructure/assets`);
       if (res.ok) {
         const data = await res.json();
         this.pumpsData = data.pumps || [];
@@ -3798,7 +3803,7 @@ const App = {
         btnApply.disabled = true;
 
         try {
-          const res = await fetch('/api/infrastructure/apply-schedule', {
+          const res = await fetch(`${window.API_BASE}/api/infrastructure/apply-schedule`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({})
@@ -3854,7 +3859,7 @@ const App = {
         e.preventDefault();
         btnRecompute.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         try {
-          const res = await fetch('/api/infrastructure/optimize', { method: 'POST', body: JSON.stringify({}) });
+          const res = await fetch(`${window.API_BASE}/api/infrastructure/optimize`, { method: 'POST', body: JSON.stringify({}) });
           const data = await res.json();
           this.showToast('LP Simplex Optimizer: Schedule Recalibrated (Latency: 12ms)', 'arrows-rotate');
         } catch (err) {
@@ -3948,7 +3953,7 @@ const App = {
       let newSuggestions = [];
 
       try {
-        const resp = await fetch('/api/chat', {
+        const resp = await fetch(`${window.API_BASE}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: query })
@@ -4338,7 +4343,7 @@ const App = {
 
   async fetchAndRenderLiveWeather() {
     try {
-      const resp = await fetch('/api/weather/live');
+      const resp = await fetch(`${window.API_BASE}/api/weather/live`);
       if (!resp.ok) return;
       const data = await resp.json();
       const cw = data.current_weather || {};

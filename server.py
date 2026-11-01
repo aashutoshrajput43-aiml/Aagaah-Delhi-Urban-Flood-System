@@ -1517,12 +1517,20 @@ class FloodAppRequestHandler(http.server.SimpleHTTPRequestHandler):
         path = parsed.path
         query = urllib.parse.parse_qs(parsed.query)
 
-        # Redirect or serve index.html for root path
+        # Serve index.html directly for root path
         if path in ("/", "/index.html"):
-            self.send_response(HTTPStatus.FOUND)
-            self.send_header("Location", "/static/index.html")
-            self.end_headers()
-            return
+            index_path = os.path.join(BASE_DIR, "index.html")
+            if not os.path.exists(index_path):
+                index_path = os.path.join(STATIC_DIR, "index.html")
+            if os.path.exists(index_path):
+                with open(index_path, "rb") as f:
+                    content = f.read()
+                self.send_response(HTTPStatus.OK)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+                return
 
         # REST API Endpoints
         if path == "/api/infrastructure/assets":
