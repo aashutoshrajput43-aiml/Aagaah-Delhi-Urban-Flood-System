@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>आगाaah (Aagaah) - Delhi Urban Flood Monitoring Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z'/></svg>">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="/static/app.css?v=6.0">
+</head>
+<body>
+  <div id="app-container" class="dashboard-root">
+    <!-- ============================================== -->
+    <!-- 1. LEFT SIDEBAR (Dark Navy)                    -->
+    <!-- ============================================== -->
+    <aside id="left-sidebar" class="sidebar-navy">
+      <!-- Aagaah (आगाaah) Brand Header -->
+      <div class="sidebar-brand-block">
+        <div class="aagaah-logo-badge">
+          <img src="/static/assets/aagaah_logo.png" alt="आगाaah Logo" class="aagaah-brand-img" />
+        </div>
+        <div class="sidebar-title-text">
+          <h2>आगाaah (Aagaah)</h2>
+          <h3>Delhi Urban Flood System</h3>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (Vertical Stack) -->
+      <nav class="sidebar-nav-menu">
+        <button class="nav-item-btn active" data-tab="overview" id="nav-tab-overview">
+          <i class="fa-solid fa-house"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item-btn" data-tab="simulation" id="nav-tab-simulation">
+          <i class="fa-solid fa-play"></i>
+          <span>Simulation</span>
+        </button>
+        <button class="nav-item-btn" data-tab="analytics" id="nav-tab-analytics">
+          <i class="fa-solid fa-chart-column"></i>
+          <span>Analytics</span>
+        </button>
+        <button class="nav-item-btn" data-tab="reports" id="nav-tab-reports">
+          <i class="fa-solid fa-file-lines"></i>
+          <span>Reports</span>
+        </button>
+        <button class="nav-item-btn" id="nav-tab-saferoute" title="Flood-Safe Route Planner">
+          <i class="fa-solid fa-route text-cyan"></i>
+          <span>Safe Route</span>
+        </button>
+        <button class="nav-item-btn" data-tab="chatbot" id="nav-tab-chatbot">
+          <i class="fa-solid fa-robot"></i>
+          <span>AI Chatbot</span>
+        </button>
+        <button class="nav-item-btn" data-tab="settings" id="nav-tab-settings">
+          <i class="fa-solid fa-gear"></i>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <!-- GIS Layers Section -->
+      <div class="sidebar-group-card">
+        <div class="group-header" id="hdr-gis-layers">
+          <div class="group-title-wrap">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>GIS Layers</span>
+          </div>
+          <i class="fa-solid fa-chevron-up chevron-icon"></i>
+        </div>
+        <div class="group-content" id="body-gis-layers">
+          <label class="custom-check-row">
+            <input type="checkbox" id="layer-dem-toggle" checked>
+            <span class="box-check"><i class="fa-solid fa-check"></i></span>
+            <span class="row-label">Terrain / DEM</span>
+          </label>
+          <label class="custom-check-row">
+            <input type="checkbox" id="layer-drainage-toggle" checked>
+            <span class="box-check"><i class="fa-solid fa-check"></i></span>
+            <span class="row-label">Drainage Network</span>
+          </label>
+          <label class="custom-check-row">
+            <input type="checkbox" id="layer-danger-toggle" checked>
+            <span class="box-check"><i class="fa-solid fa-check"></i></span>
+            <span class="row-label">Flood Zones</span>
+          </label>
+          <label class="custom-check-row">
+            <input type="checkbox" id="layer-radar-toggle" checked>
+            <span class="box-check"><i class="fa-solid fa-check"></i></span>
+            <span class="row-label">Rainfall Radar</span>
+          </label>
+          <label class="custom-check-row">
+            <input type="checkbox" id="layer-flow-toggle">
+            <span class="box-check"><i class="fa-solid fa-check"></i></span>
+            <span class="row-label">Road Network</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Rainfall Simulation Section -->
+      <div class="sidebar-group-card">
+        <div class="group-header" id="hdr-rain-sim">
+          <div class="group-title-wrap">
+            <i class="fa-solid fa-cloud-rain"></i>
+            <span>Rainfall Simulation</span>
+          </div>
+          <i class="fa-solid fa-chevron-up chevron-icon"></i>
+        </div>
+        <div class="group-content" id="body-rain-sim">
+          <div class="sim-label-row">
+            <span class="sim-txt">Rainfall (mm)</span>
+            <input type="number" id="sim-rainfall-input" min="10" max="150" step="5" value="50" class="sim-val-box" title="Rainfall intensity in millimeters">
+          </div>
+          <input type="range" id="sim-rainfall-slider" min="10" max="150" step="5" value="50" class="sim-slider-bar" title="Rainfall intensity slider">
+
+          <div class="sim-label-row" style="margin-top: 10px;">
+            <span class="sim-txt">Rainfall Time (min)</span>
+            <input type="number" id="sim-time-input" min="0" max="180" step="15" value="60" class="sim-val-box" title="Simulation time horizon in minutes">
+          </div>
+          <input type="range" id="simulation-timeline" min="0" max="180" step="15" value="60" class="sim-slider-bar" title="Simulation time slider">
+
+          <button id="btn-sim-run" class="btn-sidebar-run" style="margin-top: 10px;">
+            <i class="fa-solid fa-play"></i> Run Simulation
+          </button>
+        </div>
+      </div>
+
+      <!-- System Online Status Card -->
+      <div class="sidebar-system-badge">
+        <div class="sys-status-head">
+          <span class="status-dot-green"></span>
+          <span class="status-name">System Online</span>
+        </div>
+        <div class="sys-status-sub">All Systems Operational</div>
+      </div>
+
+      <!-- Hidden compatibility toggles and triggers -->
+      <div class="hidden-compat-box" style="display: none;">
+        <button id="btn-tab-radar"></button>
+        <button id="btn-tab-scenario"></button>
+        <div id="radar-subpanel"></div>
+        <div id="scenario-subpanel"></div>
+        <span id="radar-timestamp"></span>
+        <button id="btn-refresh-radar"></button>
+        <button id="btn-collapse-danger-legend"></button>
+        <div id="route-active-summary-hud"></div>
+        <button id="btn-reopen-route-planner"></button>
+        <button id="btn-clear-route-hud"></button>
+        <div id="center-viewport"></div>
+        <div id="workspace"></div>
+        <input type="checkbox" id="layer-hillshade-toggle">
+        <input type="checkbox" id="layer-contours-toggle" checked>
+        <input type="checkbox" id="layer-depth-toggle" checked>
+        <input type="checkbox" id="layer-nodes-toggle" checked>
+        <input type="checkbox" id="layer-hotspots-toggle">
+        <input type="range" id="layer-dem-opacity" value="85">
+        <input type="range" id="layer-hillshade-opacity" value="70">
+        <input type="range" id="layer-contours-opacity" value="80">
+        <input type="range" id="layer-drainage-opacity" value="90">
+        <input type="range" id="layer-depth-opacity" value="85">
+        <input type="range" id="layer-radar-opacity" value="60">
+        <input type="range" id="layer-hotspots-opacity" value="100">
+        <input type="range" id="layer-danger-opacity" value="85">
+        <button id="btn-reset-layers"></button>
+        <button id="btn-sim-pause"></button>
+        <button id="btn-sim-reset"></button>
+        <span id="timeline-current-min"></span>
+        <button id="card-verif-satellite"></button>
+        <div id="card-verif-cctv"></div>
+        <div id="card-verif-iot"></div>
+        <button id="btn-open-route-planner"></button>
+        <select id="study-area-select"><option value="delhi-nct">Delhi NCT</option></select>
+        <div id="rain-scenario-pill"></div>
+      </div>
+    </aside>
+
+    <!-- ============================================== -->
+    <!-- 2. MAIN CONTENT AREA (Light Canvas)            -->
+    <!-- ============================================== -->
+    <main id="main-content" class="main-canvas">
+      <!-- Top Header Bar -->
+      <header id="top-header-bar" class="main-topbar">
+        <div class="topbar-left">
+          <span class="live-data-pill">
+            <span class="live-dot"></span> Live Data
+          </span>
+          <span class="topbar-timestamp" id="top-live-timestamp">Last Updated: 27 Jul 2025, 04:32 PM</span>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Search box with attached blue button -->
+          <div class="search-input-group">
+            <input type="text" id="location-search-input" placeholder="Search location..." autocomplete="off">
+            <button id="btn-search-go" class="search-submit-btn" title="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <div id="search-dropdown-results" class="search-dropdown hidden"></div>
+          </div>
+
+          <!-- Notification Bell with red badge 2 -->
+          <div class="bell-notification-wrap" id="btn-notifications" title="Recent Alerts">
+            <i class="fa-regular fa-bell"></i>
+            <span class="badge-red-circle">2</span>
+          </div>
+
+          <!-- User Avatar Circle A -->
+          <div class="user-avatar-navy" title="Administrator">A</div>
+        </div>
+      </header>
+
+      <!-- Scrollable Dashboard Viewport -->
+      <div class="dashboard-scrollable-canvas" id="tab-view-dashboard">
+        <!-- TOP 4 METRICS CARDS ROW (White Cards) -->
+        <section class="kpi-metrics-row">
+          <!-- KPI 1: Current Rainfall -->
+          <div class="kpi-card-white" id="card-current-rainfall" title="Click to view Rainfall Radar & Intensity">
+            <div class="kpi-icon-square bg-light-blue text-primary-blue">
+              <i class="fa-solid fa-cloud-showers-heavy"></i>
+            </div>
+            <div class="kpi-text-block">
+              <div class="kpi-label">Current Rainfall</div>
+              <div class="kpi-number-row">
+                <span class="kpi-number" id="kpi-current-rainfall">48 mm</span>
+                <span class="kpi-trend-pill green"><i class="fa-solid fa-arrow-up"></i> +12%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 2: Flooded Area -->
+          <div class="kpi-card-white" id="card-flooded-area" title="Click to view Delhi Inundation Extent">
+            <div class="kpi-icon-square bg-light-blue text-cyan">
+              <i class="fa-solid fa-water"></i>
+            </div>
+            <div class="kpi-text-block">
+              <div class="kpi-label">Flooded Area</div>
+              <div class="kpi-number-row">
+                <span class="kpi-number" id="kpi-flooded-area">12.6 km²</span>
+                <span class="kpi-trend-pill green"><i class="fa-solid fa-arrow-up"></i> +8%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 3: High Risk Zones -->
+          <div class="kpi-card-white" id="card-high-risk-zones" title="Click to Focus High Risk Flood Zones & Plan Safe Route">
+            <div class="kpi-icon-square bg-light-red text-red">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="kpi-text-block">
+              <div class="kpi-label">High Risk Zones</div>
+              <div class="kpi-number-row">
+                <span class="kpi-number text-dark" id="kpi-high-risk-zones">3</span>
+                <a href="#" class="kpi-link-red" id="link-view-risk-details">View Details &rarr;</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 4: Overloaded Drains -->
+          <div class="kpi-card-white" id="card-overloaded-drains" title="Click to Trace Overloaded Drains">
+            <div class="kpi-icon-square bg-light-teal text-teal">
+              <i class="fa-solid fa-faucet-drip"></i>
+            </div>
+            <div class="kpi-text-block">
+              <div class="kpi-label">Overloaded Drains</div>
+              <div class="kpi-number-row">
+                <span class="kpi-number text-dark" id="kpi-overloaded-drains">1</span>
+                <a href="#" class="kpi-link-green" id="link-view-drain-details">View Details &rarr;</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MIDDLE SECTION: MAP (Center) + HYDRO INSPECTOR (Right) -->
+        <section class="map-inspector-section">
+          <!-- Center Map Viewport Card -->
+          <div class="map-viewport-card">
+            <!-- Map View Switchers: Map | Satellite | Live -->
+            <div class="map-view-toggle-bar">
+              <button class="map-view-btn active" data-view="2d" id="btn-view-map">Map</button>
+              <button class="map-view-btn" data-view="satellite" id="btn-view-satellite">Satellite</button>
+              <button class="map-view-btn" data-view="live" id="btn-view-live" title="Live Real-Time Weather & Actual Ground Status">
+                <span class="live-pulse-dot"></span> Live
+              </button>
+              <button class="map-action-pill" id="btn-quick-infra-optimizer" title="Autonomous Pumps & Sluice Gates Optimizer" style="display:inline-flex; align-items:center; gap:5px; background: rgba(30, 58, 138, 0.9); color: #38bdf8; border: 1px solid #0284c7; font-weight: 700; margin-left: 6px;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> AI Gate Optimizer
+              </button>
+              <button class="map-view-btn" data-view="3d-flood" id="btn-view-3d" style="display: none;">3D</button>
+            </div>
+
+            <!-- Floating Map Stack Tools (Zoom, Layer, Recenter) -->
+            <div class="map-stack-tools">
+              <button class="tool-square-btn" id="btn-map-zoom-in" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+              <button class="tool-square-btn" id="btn-map-zoom-out" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+              <button class="tool-square-btn" id="btn-toggle-basemap" title="Layer Stack"><i class="fa-solid fa-layer-group"></i></button>
+              <button class="tool-square-btn" id="btn-recenter-delhi" title="Recenter Delhi NCT"><i class="fa-solid fa-crosshairs"></i></button>
+              <button class="tool-square-btn" id="btn-measure-tool" style="display: none;"></button>
+              <button class="tool-square-btn" id="btn-fullscreen-map" style="display: none;"></button>
+            </div>
+
+            <!-- Floating Live Real-Time Weather HUD Card -->
+            <div class="live-weather-card hidden" id="live-weather-card">
+              <div class="live-card-header">
+                <div class="live-card-title-group">
+                  <div class="live-badge"><span class="live-pulse-dot"></span> LIVE METEOROLOGY & GROUND OBSERVATION</div>
+                  <div class="live-city-name">Delhi NCT & Yamuna River Reach</div>
+                </div>
+                <button class="live-card-close-btn" id="btn-close-live-mode" title="Exit Live Weather Mode">&times;</button>
+              </div>
+              <div class="live-card-body">
+                <div class="live-main-stat">
+                  <div class="live-temp-wrap">
+                    <span class="live-temp-val" id="live-card-temp">21.3°C</span>
+                    <span class="live-condition-val" id="live-card-condition">Clear Sky</span>
+                  </div>
+                  <div class="live-icon-wrap" id="live-card-icon">
+                    <i class="fa-solid fa-cloud-sun text-amber"></i>
+                  </div>
+                </div>
+                <div class="live-details-grid">
+                  <div class="live-stat-item">
+                    <span class="live-lbl"><i class="fa-solid fa-cloud-rain text-blue"></i> Rain Rate</span>
+                    <span class="live-val" id="live-card-rain">0.0 mm/hr</span>
+                  </div>
+                  <div class="live-stat-item">
+                    <span class="live-lbl"><i class="fa-solid fa-droplet text-cyan"></i> Humidity</span>
+                    <span class="live-val" id="live-card-humidity">83%</span>
+                  </div>
+                  <div class="live-stat-item">
+                    <span class="live-lbl"><i class="fa-solid fa-wind text-muted"></i> Wind Speed</span>
+                    <span class="live-val" id="live-card-wind">3.0 km/h</span>
+                  </div>
+                  <div class="live-stat-item">
+                    <span class="live-lbl"><i class="fa-solid fa-water text-blue"></i> Yamuna Level</span>
+                    <span class="live-val text-red" id="live-card-yamuna">205.85 m</span>
+                  </div>
+                </div>
+                <div class="live-flood-notice" id="live-card-notice">
+                  <i class="fa-solid fa-satellite-dish text-green"></i> <span>Actual Ground Observation Active (Simulations Hidden)</span>
+                </div>
+                <div class="live-card-footer">
+                  <span class="live-updated-time" id="live-card-updated"><i class="fa-solid fa-clock-rotate-left"></i> Updated: Just now</span>
+                  <button class="live-refresh-btn" id="btn-refresh-live-weather" title="Fetch Latest Observation"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Leaflet 2D Map Container -->
+            <div id="map-container"></div>
+
+            <!-- 2D Leaflet Viewport Active -->
+
+            <!-- Bottom-Left Legend matching mockup -->
+            <div class="map-legend-box" id="map-danger-legend">
+              <div class="legend-header" id="danger-legend-content">
+                <div class="legend-row-item legend-clickable" id="legend-item-safe" title="Click to highlight Safe Highland Zones"><span class="color-chip bg-safe"></span> Safe Zone</div>
+                <div class="legend-row-item legend-clickable" id="legend-item-moderate" title="Click to highlight Moderate Risk Culverts"><span class="color-chip bg-moderate"></span> Moderate Risk</div>
+                <div class="legend-row-item legend-clickable" id="legend-item-high" title="Click to highlight Critical High Risk Zones"><span class="color-chip bg-high"></span> High Risk</div>
+                <div class="legend-row-item legend-clickable" id="legend-item-water" title="Click to highlight Yamuna River Channel"><span class="color-chip bg-water"></span> Water Body</div>
+                <div class="legend-row-item" id="legend-item-drainage" style="display:flex; align-items:center; gap:6px; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 5px; margin-top: 3px;">
+                  <span style="display:inline-block; width:16px; height:3.5px; background:#ef4444; border-radius:2px;"></span>
+                  <span>Drainage Line (Red)</span>
+                </div>
+                <div class="legend-row-item" id="legend-item-junction" style="display:flex; align-items:center; gap:6px;">
+                  <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#ef4444; border:1.8px solid #ffffff; box-shadow:0 0 4px rgba(0,0,0,0.6);"></span>
+                  <span>Drainage Junction</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Hydro Inspector Card (Dark Navy) -->
+          <aside class="hydro-inspector-card" id="right-sidebar">
+            <div class="hydro-card-header" id="hdr-hydro-inspector">
+              <div class="hydro-title-group">
+                <i class="fa-solid fa-droplet text-blue"></i>
+                <h3>Hydro Inspector</h3>
+              </div>
+              <i class="fa-solid fa-chevron-up chevron-icon" style="display: none;"></i>
+            </div>
+
+            <div class="hydro-card-body" id="body-hydro-inspector">
+              <!-- Location Photo + Water Level Header -->
+              <div class="hydro-river-block">
+                <div class="river-thumb-wrap">
+                  <img src="/static/assets/yamuna_river.jpg" onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=400&q=80'" alt="Yamuna River" class="river-img">
+                </div>
+                <div class="river-details-col">
+                  <div class="river-title">Yamuna River</div>
+                  <div class="river-level-label">Water Level</div>
+                  <div class="river-level-val-row">
+                    <span class="level-big-num" id="val-hydro-depth">4.2 m</span>
+                    <span class="badge-status-pill green" id="val-hydro-status">Normal</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sparkline Area Hydrograph Chart -->
+              <div class="sparkline-container">
+                <div class="sparkline-y-axis">
+                  <span>5m</span>
+                  <span>4m</span>
+                  <span>2m</span>
+                  <span>1m</span>
+                  <span>0m</span>
+                </div>
+                <div class="sparkline-svg-wrap">
+                  <svg viewBox="0 0 240 70" class="sparkline-svg">
+                    <defs>
+                      <linearGradient id="hydroGradNew" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.45"/>
+                        <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M 0 54 Q 55 48 115 42 T 240 28 L 240 70 L 0 70 Z" fill="url(#hydroGradNew)"/>
+                    <path d="M 0 54 Q 55 48 115 42 T 240 28" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round"/>
+                    <circle cx="28" cy="51" r="3" fill="#38bdf8"/>
+                    <circle cx="68" cy="47" r="3" fill="#38bdf8"/>
+                    <circle cx="108" cy="43" r="3" fill="#38bdf8"/>
+                    <circle cx="148" cy="38" r="3" fill="#38bdf8"/>
+                    <circle cx="188" cy="34" r="3" fill="#38bdf8"/>
+                    <circle cx="232" cy="29" r="3.5" fill="#ffffff" stroke="#0284c7" stroke-width="2"/>
+                  </svg>
+                  <div class="sparkline-x-axis">
+                    <span>12PM</span>
+                    <span>4PM</span>
+                    <span>8PM</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Telemetry List -->
+              <div class="hydro-telemetry-grid">
+                <div class="telemetry-row">
+                  <span class="telemetry-lbl"><i class="fa-solid fa-triangle-exclamation text-blue"></i> Elevation (DEM)</span>
+                  <span class="telemetry-val" id="val-hydro-elevation">253.8 m</span>
+                </div>
+                <div class="telemetry-row">
+                  <span class="telemetry-lbl"><i class="fa-solid fa-water text-blue"></i> Water Depth</span>
+                  <span class="telemetry-val" id="val-hydro-water-depth">0.18 m</span>
+                </div>
+                <div class="telemetry-row">
+                  <span class="telemetry-lbl"><i class="fa-solid fa-chart-pie text-blue"></i> Drainage Capacity</span>
+                  <span class="telemetry-val" id="feat-capacity">92 %</span>
+                </div>
+              </div>
+
+              <!-- Hidden telemetry sync elements -->
+              <div style="display: none;">
+                <span id="inspector-coords"></span>
+                <span id="val-hydro-flowdir">East &rarr; West</span>
+                <span id="val-hydro-slope"></span>
+                <span id="val-hydro-runoff"></span>
+                <span id="drainage-feature-tag"></span>
+                <span id="feat-id"></span>
+                <span id="feat-name"></span>
+                <span id="feat-basin"></span>
+                <span id="feat-outlet"></span>
+                <span id="feat-inflow"></span>
+                <span id="feat-surcharge"></span>
+                <span id="feat-ground-elev"></span>
+                <span id="feat-topology"></span>
+                <span id="feat-util-pct"></span>
+                <div id="feat-util-bar"></div>
+                <button id="btn-trace-drainage"></button>
+                <a href="#" id="btn-export-hydrograph"></a>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <!-- BOTTOM ROW: 4 ANALYTICS CARDS (White Cards) -->
+        <section class="bottom-analytics-row" id="bottom-analytics-bar">
+          <!-- 1. Rainfall Trend (7 Days) -->
+          <div class="analytics-card-white">
+            <div class="analytics-head-row">
+              <h4>Rainfall Trend</h4>
+              <div class="filter-dropdown-chip">
+                <span>7 Days</span> <i class="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+            <div class="rainfall-chart-container">
+              <div class="y-ticks-axis">
+                <span>100</span>
+                <span>75</span>
+                <span>50</span>
+                <span>25</span>
+                <span>0</span>
+              </div>
+              <div class="bars-flex-container">
+                <div class="bars-row">
+                  <div class="trend-column" style="height: 48%;"><div class="trend-bar-fill"></div></div>
+                  <div class="trend-column" style="height: 60%;"><div class="trend-bar-fill"></div></div>
+                  <div class="trend-column" style="height: 35%;"><div class="trend-bar-fill"></div></div>
+                  <div class="trend-column" style="height: 72%;"><div class="trend-bar-fill"></div></div>
+                  <div class="trend-column" style="height: 55%;"><div class="trend-bar-fill"></div></div>
+                  <div class="trend-column" style="height: 40%;"><div class="trend-bar-fill"></div></div>
+                  <div class="trend-column active-peak" style="height: 80%;"><div class="trend-bar-fill"></div></div>
+                </div>
+                <div class="x-ticks-axis">
+                  <span>Mon</span>
+                  <span>Tue</span>
+                  <span>Wed</span>
+                  <span>Thu</span>
+                  <span>Fri</span>
+                  <span>Sat</span>
+                  <span>Sun</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Flood Risk Overview Donut -->
+          <div class="analytics-card-white">
+            <div class="analytics-head-row">
+              <h4>Flood Risk Overview</h4>
+            </div>
+            <div class="donut-chart-flex">
+              <div class="donut-ring-wrap">
+                <svg viewBox="0 0 100 100" class="donut-svg">
+                  <circle cx="50" cy="50" r="38" class="donut-track" stroke-width="12"/>
+                  <circle cx="50" cy="50" r="38" class="donut-seg-safe" stroke-width="12" stroke-dasharray="162 239" stroke-dashoffset="0"/>
+                  <circle cx="50" cy="50" r="38" class="donut-seg-mod" stroke-width="12" stroke-dasharray="52 239" stroke-dashoffset="-162"/>
+                  <circle cx="50" cy="50" r="38" class="donut-seg-high" stroke-width="12" stroke-dasharray="24 239" stroke-dashoffset="-214"/>
+                </svg>
+                <div class="donut-center-pct">
+                  <span>68%</span>
+                </div>
+              </div>
+              <div class="donut-legend-list">
+                <div class="legend-entry" id="donut-legend-safe" style="cursor: pointer;" title="Click to focus Safe Elevated Highland Zones">
+                  <span class="dot-chip bg-green"></span>
+                  <span class="entry-label">Safe</span>
+                  <span class="entry-val">68%</span>
+                </div>
+                <div class="legend-entry" id="donut-legend-moderate" style="cursor: pointer;" title="Click to focus Moderate Risk Culverts">
+                  <span class="dot-chip bg-yellow"></span>
+                  <span class="entry-label">Moderate</span>
+                  <span class="entry-val">22%</span>
+                </div>
+                <div class="legend-entry" id="donut-legend-high" style="cursor: pointer;" title="Click to focus High Risk Flood Zones">
+                  <span class="dot-chip bg-red"></span>
+                  <span class="entry-label">High</span>
+                  <span class="entry-val">10%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Recent Alerts -->
+          <div class="analytics-card-white">
+            <div class="analytics-head-row">
+              <div class="alert-head-left">
+                <i class="fa-solid fa-bell text-red"></i>
+                <h4>Recent Alerts</h4>
+              </div>
+              <a href="#" class="view-all-link" id="btn-open-workflow-modal">View All &rarr;</a>
+            </div>
+            <div class="alerts-stream-list">
+              <div class="alert-stream-item alert-clickable" id="alert-item-1" title="Click to focus East Delhi High Flood Risk">
+                <span class="alert-dot red"></span>
+                <span class="alert-msg">High Flood Risk in East Delhi</span>
+                <span class="alert-ago">1 min ago</span>
+              </div>
+              <div class="alert-stream-item alert-clickable" id="alert-item-2" title="Click to trace Barapullah Overloaded Drain">
+                <span class="alert-dot orange"></span>
+                <span class="alert-msg">Drainage Capacity Reached 90%</span>
+                <span class="alert-ago">3 min ago</span>
+              </div>
+              <div class="alert-stream-item alert-clickable" id="alert-item-3" title="Click to view IMD Radar Precipitation">
+                <span class="alert-dot blue"></span>
+                <span class="alert-msg">Rainfall Intensity Increasing</span>
+                <span class="alert-ago">5 min ago</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Situation Normal Card -->
+          <div class="analytics-card-white card-situation-normal" id="card-situation-status" style="cursor: pointer;" title="System Operational Status (Click to inspect)">
+            <div class="situation-check-circle">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="situation-header">Situation Normal</h3>
+            <p class="situation-subtext">No major alerts</p>
+          </div>
+
+          <!-- Compatibility telemetry elements -->
+          <div style="display: none;">
+            <span id="stat-rainfall">50 mm</span>
+            <span id="stat-max-depth">0.85 m</span>
+            <span id="stat-flooded-area">24.2 km²</span>
+            <span id="stat-surcharged-nodes">8 / 12</span>
+            <span id="stat-overloaded-drains">4 / 8</span>
+            <span id="stat-active-warnings">Normal Operations</span>
+          </div>
+        </section>
+      </div>
+    
+      <!-- ============================================== -->
+      <!-- 2. SIMULATION LAB WORKSPACE VIEW               -->
+      <!-- ============================================== -->
+      <div id="tab-view-simulation" class="dashboard-scrollable-canvas hidden">
+        <!-- Workspace Header -->
+        <div class="workspace-header-bar">
+          <div class="workspace-header-left">
+            <div class="workspace-badge"><i class="fa-solid fa-play"></i> SIMULATION LAB</div>
+            <h2 class="workspace-title">3D Hydrodynamic Shallow Water Simulation Engine</h2>
+            <p class="workspace-subtitle">Interactive 3D numerical hydrodynamic solver simulating surface water depth, D8 downslope runoff, and drainage surcharge.</p>
+          </div>
+          <div class="workspace-header-right">
+            <div class="view-pill-group">
+              <button class="subview-btn active" id="btn-sim-mode-flood" title="3D Dynamic Flood Inundation Surface">
+                <i class="fa-solid fa-water"></i> Flood Inundation 3D
+              </button>
+              <button class="subview-btn" id="btn-sim-mode-2d" title="2D Hydrodynamic Radar & Depth Map">
+                <i class="fa-solid fa-satellite-dish"></i> 2D Hydrodynamic Radar
+              </button>
+              <button class="subview-btn" id="btn-sim-mode-elev" title="3D Topographic DEM Mesh">
+                <i class="fa-solid fa-mountain"></i> 3D Elevation (DEM)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Lab Grid -->
+        <div class="simulation-lab-grid">
+          <!-- 3D Canvas Card -->
+          <div class="sim-canvas-card">
+            <!-- 3D Views Mounted Here -->
+            <div id="view-3d-flood" class="view-container-3d" style="width: 100%; height: 560px; position: relative;">
+              <div id="canvas-3d-flood-target" style="width: 100%; height: 100%;"></div>
+            </div>
+            <div id="view-2d-hydro" class="view-container-3d hidden" style="width: 100%; height: 560px; position: relative;">
+              <canvas id="canvas-2d-hydro-radar" style="width: 100%; height: 100%; display: block;"></canvas>
+            </div>
+            <div id="view-3d-elevation" class="view-container-3d hidden" style="width: 100%; height: 560px; position: relative;">
+              <div id="canvas-3d-elevation-target" style="width: 100%; height: 100%;"></div>
+            </div>
+
+            <!-- Floating 3D Navigation Guide -->
+            <div class="sim-canvas-overlay-guide">
+              <i class="fa-solid fa-arrows-up-down-left-right"></i> Left-click: Orbit | Wheel: Zoom | Right-click: Pan
+            </div>
+
+            <!-- Floating Raycast HUD -->
+            <div class="sim-canvas-overlay-hud" id="sim-raycast-hud">
+              <div style="font-size: 10.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">
+                <i class="fa-solid fa-crosshairs text-blue"></i> 3D Raycast Telemetry
+              </div>
+              <div class="sim-hud-row"><span>Ground Elevation:</span><span class="sim-hud-val" id="hud-elev-val">253.8 m</span></div>
+              <div class="sim-hud-row"><span>Water Depth:</span><span class="sim-hud-val" id="hud-water-val" style="color: #00e5ff;">0.85 m</span></div>
+              <div class="sim-hud-row"><span>Surface Slope:</span><span class="sim-hud-val" id="hud-slope-val">1.4 &deg;</span></div>
+            </div>
+
+            <!-- Floating Simulation Effect Toggles -->
+            <div class="sim-canvas-overlay-toggles">
+              <button id="btn-toggle-rain-particles" class="sim-pill-btn active" title="Toggle Falling Rain Particles">
+                <i class="fa-solid fa-cloud-showers-heavy"></i> Rain Droplets
+              </button>
+              <button id="btn-toggle-flow-particles" class="sim-pill-btn active" title="Toggle Downslope Runoff Flow">
+                <i class="fa-solid fa-water"></i> Gravity Flow
+              </button>
+            </div>
+          </div>
+
+          <!-- Simulation Controls & Telemetry Sidebar -->
+          <div class="sim-controls-card">
+            <!-- Scenario Selection -->
+            <div>
+              <div class="sim-section-header"><i class="fa-solid fa-cloud-rain text-blue"></i> Rainfall Scenario</div>
+              <div class="sim-presets-grid" style="margin-top: 8px;">
+                <div class="sim-preset-btn" data-sim-mm="10" id="sim-preset-10">
+                  <div class="mm-num">10 mm</div>
+                  <div class="mm-lbl">Normal</div>
+                </div>
+                <div class="sim-preset-btn active" data-sim-mm="50" id="sim-preset-50">
+                  <div class="mm-num">50 mm</div>
+                  <div class="mm-lbl">Storm</div>
+                </div>
+                <div class="sim-preset-btn" data-sim-mm="100" id="sim-preset-100">
+                  <div class="mm-num">100 mm</div>
+                  <div class="mm-lbl">Cloudburst</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Time Progression Timeline -->
+            <div class="sim-timeline-box">
+              <div class="sim-time-head">
+                <span><i class="fa-solid fa-clock-rotate-left text-blue"></i> Hydro Timeline</span>
+                <span class="sim-time-pill" id="sim-lab-time-label">T + 60 min (Peak)</span>
+              </div>
+              <input type="range" id="sim-lab-timeline-slider" min="0" max="180" step="15" value="60" class="sim-timeline-slider">
+              <div class="sim-btn-row">
+                <button id="btn-sim-lab-run" class="btn-sim-play"><i class="fa-solid fa-play"></i> Run</button>
+                <button id="btn-sim-lab-pause" class="btn-sim-sub"><i class="fa-solid fa-pause"></i> Pause</button>
+                <button id="btn-sim-lab-reset" class="btn-sim-sub"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+              </div>
+            </div>
+
+            <!-- Real-time Hydraulic Output -->
+            <div>
+              <div class="sim-section-header"><i class="fa-solid fa-gauge-high text-blue"></i> Hydraulic Output</div>
+              <div class="sim-telemetry-list" style="margin-top: 8px;">
+                <div class="sim-telemetry-item">
+                  <span class="label"><i class="fa-solid fa-water text-cyan"></i> Peak Water Depth</span>
+                  <span class="val" id="sim-lab-peak-depth" style="color: #ef4444;">0.85 m</span>
+                </div>
+                <div class="sim-telemetry-item">
+                  <span class="label"><i class="fa-solid fa-chart-area text-blue"></i> Inundated Area</span>
+                  <span class="val" id="sim-lab-flooded-area">14.8 km²</span>
+                </div>
+                <div class="sim-telemetry-item">
+                  <span class="label"><i class="fa-solid fa-network-wired text-orange"></i> Surcharged Drains</span>
+                  <span class="val" id="sim-lab-overloaded-drains" style="color: #f59e0b;">4 / 8</span>
+                </div>
+                <div class="sim-telemetry-item">
+                  <span class="label"><i class="fa-solid fa-shield-halved text-green"></i> System Status</span>
+                  <span class="val text-green"><i class="fa-solid fa-check"></i> 2D Solver Active</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Storm Wave Profile -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+              <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 6px;">
+                Inundation Wave Hydrograph (0 - 180 min)
+              </div>
+              <svg viewBox="0 0 240 60" style="width: 100%; height: 50px;">
+                <path d="M 0 55 Q 60 48 110 15 T 240 45 L 240 60 L 0 60 Z" fill="rgba(56, 189, 248, 0.25)"/>
+                <path d="M 0 55 Q 60 48 110 15 T 240 45" fill="none" stroke="#0284c7" stroke-width="2.2"/>
+                <circle cx="110" cy="15" r="3.5" fill="#ef4444"/>
+                <text x="115" y="14" font-size="8.5" fill="#ef4444" font-weight="bold">Peak T+60m</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+            <!-- ============================================== -->
+      <!-- 3. ANALYTICS WORKSPACE VIEW                    -->
+      <!-- ============================================== -->
+      <div id="tab-view-analytics" class="dashboard-scrollable-canvas hidden">
+        <!-- Header -->
+        <div class="workspace-header-bar">
+          <div class="workspace-header-left">
+            <div class="workspace-badge"><i class="fa-solid fa-chart-column"></i> HYDRO ANALYTICS</div>
+            <h2 class="workspace-title">Hydrological & Drainage Basin Analytics</h2>
+            <p class="workspace-subtitle">Catchment runoff progression, hydraulic capacity utilization, and multi-sensor telemetry across Delhi NCT.</p>
+          </div>
+          <div class="workspace-header-right">
+            <button id="btn-analytics-export-csv" class="subview-btn active" style="background: #eff6ff; color: var(--primary-blue);">
+              <i class="fa-solid fa-download"></i> Export Data (CSV)
+            </button>
+          </div>
+        </div>
+
+        <div class="analytics-layout">
+          <!-- Left side navigation & quick numbers column -->
+          <aside class="side-col">
+            <!-- Jump navigation -->
+            <div class="side-card">
+              <div class="side-card-title">On this page</div>
+              <nav class="page-nav-list">
+                <a href="#sec-hydrograph" class="page-nav-link active">
+                  <i class="fa-solid fa-chart-line"></i>
+                  <span>Hydrograph</span>
+                </a>
+                <a href="#sec-vulnerability" class="page-nav-link">
+                  <i class="fa-solid fa-layer-group"></i>
+                  <span>Inundation Vulnerability</span>
+                </a>
+                <a href="#sec-basin-capacity" class="page-nav-link">
+                  <i class="fa-solid fa-table-list"></i>
+                  <span>Basin Capacity</span>
+                </a>
+                <a href="#sec-telemetry" class="page-nav-link">
+                  <i class="fa-solid fa-satellite-dish"></i>
+                  <span>Sensor Telemetry</span>
+                </a>
+              </nav>
+            </div>
+
+            <!-- Quick numbers from existing data -->
+            <div class="side-card">
+              <div class="side-card-title">Quick Numbers</div>
+              <div class="quick-stats-list">
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Catchment Area</span>
+                  <span class="quick-stat-val">1,484 km²</span>
+                  <span class="quick-stat-sub">Delhi NCT</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Peak Discharge</span>
+                  <span class="quick-stat-val">3,420 m³/s</span>
+                  <span class="quick-stat-sub">+14% Peak</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Runoff Coefficient</span>
+                  <span class="quick-stat-val">0.78</span>
+                  <span class="quick-stat-sub">Urban Hard (C)</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Critical Nodes</span>
+                  <span class="quick-stat-val">6 Nodes</span>
+                  <span class="quick-stat-sub">Capacity 90%+</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Main content area -->
+          <div class="page-body">
+            <!-- 4 Top Analytics Metric Cards -->
+            <div class="analytics-metrics-four">
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-blue text-primary-blue"><i class="fa-solid fa-map"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Catchment Area</div>
+                  <div class="kpi-number-row"><span class="kpi-number">1,484 km²</span><span class="kpi-trend-pill green">Delhi NCT</span></div>
+                </div>
+              </div>
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-blue text-cyan"><i class="fa-solid fa-arrow-down-wide-short"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Aggregate Peak Discharge</div>
+                  <div class="kpi-number-row"><span class="kpi-number">3,420 m³/s</span><span class="kpi-trend-pill green">+14% Peak</span></div>
+                </div>
+              </div>
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-yellow text-yellow"><i class="fa-solid fa-gauge-high"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Mean Runoff Coeff (C)</div>
+                  <div class="kpi-number-row"><span class="kpi-number">0.78</span><span class="kpi-trend-pill yellow">Urban Hard</span></div>
+                </div>
+              </div>
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-red text-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Critical Surcharge Nodes</div>
+                  <div class="kpi-number-row"><span class="kpi-number">6 Nodes</span><span class="kpi-trend-pill red">Capacity 90%+</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1. Hydrograph Section -->
+            <section id="sec-hydrograph" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-chart-line text-blue"></i> 24-Hour Catchment Hydrograph (Inflow vs Outflow Capacity)</h3>
+                <span style="font-size: 11px; color: #64748b; font-weight: 600;">Time Step: 15 min</span>
+              </div>
+              <div class="hydrograph-wrap">
+                <svg viewBox="0 0 820 420" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                  <!-- Definitions -->
+                  <defs>
+                    <linearGradient id="hydroFillGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#0284c7" stop-opacity="0.32"/>
+                      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.02"/>
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Horizontal Grid Lines & Y-ticks -->
+                  <g stroke="#f1f5f9" stroke-width="1">
+                    <line x1="65" y1="40" x2="795" y2="40"/>
+                    <line x1="65" y1="110" x2="795" y2="110"/>
+                    <line x1="65" y1="180" x2="795" y2="180"/>
+                    <line x1="65" y1="250" x2="795" y2="250"/>
+                    <line x1="65" y1="320" x2="795" y2="320"/>
+                  </g>
+
+                  <!-- Y-Axis Unit Labels -->
+                  <text x="60" y="44" fill="#94a3b8" font-size="10" text-anchor="end">4,000</text>
+                  <text x="60" y="114" fill="#94a3b8" font-size="10" text-anchor="end">3,000</text>
+                  <text x="60" y="184" fill="#94a3b8" font-size="10" text-anchor="end">2,000</text>
+                  <text x="60" y="254" fill="#94a3b8" font-size="10" text-anchor="end">1,000</text>
+                  <text x="60" y="324" fill="#94a3b8" font-size="10" text-anchor="end">0 m³/s</text>
+
+                  <!-- Surcharge Capacity Line (2,800 m³/s) -->
+                  <line x1="65" y1="124" x2="795" y2="124" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="6, 4"/>
+                  <text x="75" y="117" fill="#ef4444" font-size="10.5" font-weight="700">Design Trunk Discharge Capacity (2,800 m³/s)</text>
+
+                  <!-- Baseflow Area -->
+                  <path d="M 65 300 Q 220 295 420 290 T 795 295 L 795 320 L 65 320 Z" fill="#e0f2fe" opacity="0.6"/>
+                  <text x="710" y="312" fill="#0284c7" font-size="9.5" font-weight="600">Baseflow (320 m³/s)</text>
+
+                  <!-- Storm Runoff Hydrograph Curve Area & Line -->
+                  <path d="M 65 315 Q 180 290 280 80 T 470 240 T 795 305 L 795 320 L 65 320 Z" fill="url(#hydroFillGrad)"/>
+                  <path d="M 65 315 Q 180 290 280 80 T 470 240 T 795 305" fill="none" stroke="#0284c7" stroke-width="3"/>
+
+                  <!-- Peak Indicator -->
+                  <circle cx="280" cy="80" r="5" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+                  <text x="292" y="76" fill="#0f172a" font-size="11" font-weight="800">Peak Inflow: 3,420 m³/s (T + 60 min)</text>
+
+                  <!-- X-Axis Labels -->
+                  <g fill="#94a3b8" font-size="9.5" text-anchor="middle">
+                    <text x="65" y="350">00:00</text>
+                    <text x="170" y="350">04:00</text>
+                    <text x="280" y="350">08:00 (Storm Peak)</text>
+                    <text x="420" y="350">12:00</text>
+                    <text x="560" y="350">16:00</text>
+                    <text x="680" y="350">20:00</text>
+                    <text x="795" y="350">24:00</text>
+                  </g>
+
+                  <!-- Legend items inside SVG bottom -->
+                  <g font-size="10" transform="translate(140, 385)">
+                    <rect x="0" y="0" width="16" height="4" fill="#0284c7"/>
+                    <text x="22" y="5" fill="#475569">Storm Runoff Inflow</text>
+
+                    <line x1="160" y1="2" x2="180" y2="2" stroke="#ef4444" stroke-width="2" stroke-dasharray="4, 3"/>
+                    <text x="186" y="5" fill="#475569">Channel Capacity Limit</text>
+
+                    <rect x="340" y="-3" width="14" height="10" fill="#e0f2fe"/>
+                    <text x="360" y="5" fill="#475569">Baseflow Component</text>
+                  </g>
+                </svg>
+              </div>
+            </section>
+
+            <!-- 2. Inundation Vulnerability Section -->
+            <section id="sec-vulnerability" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-layer-group text-blue"></i> Topographic Inundation Vulnerability</h3>
+                <span style="font-size: 11px; color: #64748b; font-weight: 600;">Digital Elevation Tiers</span>
+              </div>
+              <div class="vulnerability-stack">
+                <div class="vuln-tier-row red-tier">
+                  <div class="vuln-tier-head">
+                    <span class="vuln-tier-title"><i class="fa-solid fa-triangle-exclamation"></i> Lowland Floodplain (&lt; 205m MSL)</span>
+                    <span class="vuln-tier-area">12.6 km²</span>
+                  </div>
+                  <div class="vuln-tier-desc">Yamuna River corridor &amp; natural depression sumps. Highly prone to backwater surcharge from trunk outfalls during high Yamuna stages (&gt;204.8m).</div>
+                </div>
+
+                <div class="vuln-tier-row amber-tier">
+                  <div class="vuln-tier-head">
+                    <span class="vuln-tier-title"><i class="fa-solid fa-circle-exclamation"></i> Urban Plains (205m - 225m MSL)</span>
+                    <span class="vuln-tier-area">840 km²</span>
+                  </div>
+                  <div class="vuln-tier-desc">Connaught Place, ITO Vikas Marg, railway underpasses (Minto, Pul Prahladpur) prone to localized bowl depressions and culvert headloss ponding.</div>
+                </div>
+
+                <div class="vuln-tier-row green-tier">
+                  <div class="vuln-tier-head">
+                    <span class="vuln-tier-title"><i class="fa-solid fa-shield-halved"></i> Southern Aravalli Ridge (&gt; 225m MSL)</span>
+                    <span class="vuln-tier-area">631 km²</span>
+                  </div>
+                  <div class="vuln-tier-desc">Rocky natural highland plateau generating high initial runoff velocity (v ~ 1.8 m/s), draining eastward toward Yamuna plain. Optimal safe haven zone.</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. Basin Capacity Breakdown Section -->
+            <section id="sec-basin-capacity" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-table-list text-blue"></i> Trunk Drainage Basin Capacity Breakdown</h3>
+                <span class="badge-status-table amber">6 Monitored Basins</span>
+              </div>
+              <div class="table-scroll-wrap">
+                <table class="drain-capacity-table">
+                  <thead>
+                    <tr>
+                      <th>Drain Basin Name</th>
+                      <th>Sector</th>
+                      <th>Design Cap</th>
+                      <th>Peak Inflow</th>
+                      <th>Utilization</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Barapullah Trunk Basin No. 12</strong></td>
+                      <td>South Delhi</td>
+                      <td>2,800 m³/s</td>
+                      <td>2,576 m³/s</td>
+                      <td><strong style="color: #ef4444;">92 %</strong></td>
+                      <td><span class="badge-status-table red">CRITICAL SURCHARGE</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Najafgarh Main Trunk Drain</strong></td>
+                      <td>West Delhi</td>
+                      <td>4,500 m³/s</td>
+                      <td>3,960 m³/s</td>
+                      <td><strong style="color: #f59e0b;">88 %</strong></td>
+                      <td><span class="badge-status-table amber">HIGH LOAD</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Yamuna Active River Corridor</strong></td>
+                      <td>Central / East</td>
+                      <td>8,000 m³/s</td>
+                      <td>5,600 m³/s</td>
+                      <td><strong style="color: #0284c7;">70 %</strong></td>
+                      <td><span class="badge-status-table blue">MONITORED</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Trans-Yamuna Drainage Reach</strong></td>
+                      <td>East Delhi</td>
+                      <td>1,200 m³/s</td>
+                      <td>912 m³/s</td>
+                      <td><strong style="color: #f59e0b;">76 %</strong></td>
+                      <td><span class="badge-status-table amber">MODERATE</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Shahdara Link Drainage Channel</strong></td>
+                      <td>North-East</td>
+                      <td>650 m³/s</td>
+                      <td>422 m³/s</td>
+                      <td><strong style="color: #10b981;">65 %</strong></td>
+                      <td><span class="badge-status-table green">NORMAL</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>West Delhi Arterial Collector</strong></td>
+                      <td>West Delhi</td>
+                      <td>1,800 m³/s</td>
+                      <td>1,044 m³/s</td>
+                      <td><strong style="color: #10b981;">58 %</strong></td>
+                      <td><span class="badge-status-table green">NORMAL</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- 4. Sensor Telemetry Section -->
+            <section id="sec-telemetry" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-satellite-dish text-blue"></i> Live Sensor Telemetry Ingestion</h3>
+                <span class="badge-status-table green">All Live</span>
+              </div>
+              <div class="sensor-grid-list">
+                <div class="sensor-card-row">
+                  <div>
+                    <div class="sensor-name">IMD Doppler Radar (Safdarjung)</div>
+                    <div class="sensor-meta">Band: S-Band &bull; Cadence: 10 min</div>
+                  </div>
+                  <div class="sensor-reading">48.5 dBZ</div>
+                </div>
+                <div class="sensor-card-row">
+                  <div>
+                    <div class="sensor-name">IMD Doppler Radar (Palam)</div>
+                    <div class="sensor-meta">Band: C-Band &bull; Precipitation</div>
+                  </div>
+                  <div class="sensor-reading">48.0 mm/h</div>
+                </div>
+                <div class="sensor-card-row">
+                  <div>
+                    <div class="sensor-name">Wazirabad Barrage River Gauge</div>
+                    <div class="sensor-meta">Yamuna Upstream Level</div>
+                  </div>
+                  <div class="sensor-reading" style="color: #10b981;">204.80 m (Normal)</div>
+                </div>
+                <div class="sensor-card-row">
+                  <div>
+                    <div class="sensor-name">Minto Bridge Ultrasonic Sensor</div>
+                    <div class="sensor-meta">Underpass Sump Depth</div>
+                  </div>
+                  <div class="sensor-reading" style="color: #ef4444;">0.85 m (Warning)</div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+            <!-- ============================================== -->
+      <!-- 4. REPORTS WORKSPACE VIEW                      -->
+      <!-- ============================================== -->
+      <div id="tab-view-reports" class="dashboard-scrollable-canvas hidden">
+        <!-- Header -->
+        <div class="workspace-header-bar">
+          <div class="workspace-header-left">
+            <div class="workspace-badge"><i class="fa-solid fa-file-lines"></i> FLOOD REPORTS</div>
+            <h2 class="workspace-title">Flood Intelligence & Field Incident Reports</h2>
+            <p class="workspace-subtitle">Submit ground truth incident reports, inspect satellite SAR verification, and review verified field incidents.</p>
+          </div>
+          <div class="workspace-header-right">
+            <button id="btn-reports-export-csv" class="subview-btn active" style="background: #eff6ff; color: var(--primary-blue);">
+              <i class="fa-solid fa-download"></i> Export Incident Log (CSV)
+            </button>
+          </div>
+        </div>
+
+        <div class="analytics-layout">
+          <!-- Left side navigation & quick numbers column -->
+          <aside class="side-col">
+            <!-- Jump navigation -->
+            <div class="side-card">
+              <div class="side-card-title">On this page</div>
+              <nav class="page-nav-list">
+                <a href="#sec-submit-report" class="page-nav-link active">
+                  <i class="fa-solid fa-bullhorn"></i>
+                  <span>Submit Report</span>
+                </a>
+                <a href="#sec-verified-reports" class="page-nav-link">
+                  <i class="fa-solid fa-list-check"></i>
+                  <span>Verified Incidents</span>
+                </a>
+                <a href="#sec-satellite-sar" class="page-nav-link">
+                  <i class="fa-solid fa-satellite"></i>
+                  <span>Satellite SAR Verification</span>
+                </a>
+                <a href="#sec-cctv-feeds" class="page-nav-link">
+                  <i class="fa-solid fa-video"></i>
+                  <span>CCTV Sump Feeds</span>
+                </a>
+                <a href="#sec-pump-stations" class="page-nav-link">
+                  <i class="fa-solid fa-gears"></i>
+                  <span>Dewatering Pumps</span>
+                </a>
+                <a href="#sec-dispatch-log" class="page-nav-link">
+                  <i class="fa-solid fa-truck-medical"></i>
+                  <span>Dispatch Activity</span>
+                </a>
+              </nav>
+            </div>
+
+            <!-- Incident Overview Numbers -->
+            <div class="side-card">
+              <div class="side-card-title">Incident Overview</div>
+              <div class="quick-stats-list">
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Active Reports</span>
+                  <span class="quick-stat-val">18 Reports</span>
+                  <span class="quick-stat-sub">Across 6 Sectors</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Verified Rate</span>
+                  <span class="quick-stat-val">88.5%</span>
+                  <span class="quick-stat-sub">Ground Verified</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Critical Sumps</span>
+                  <span class="quick-stat-val">4 Active</span>
+                  <span class="quick-stat-sub">100% Dewatering Load</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Avg Response ETA</span>
+                  <span class="quick-stat-val">14 min</span>
+                  <span class="quick-stat-sub">DJB & PWD Mobile Units</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Main content area -->
+          <div class="page-body">
+            <!-- 4 Top Reports Metric Cards -->
+            <div class="analytics-metrics-four">
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-blue text-primary-blue"><i class="fa-solid fa-clipboard-list"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Total Incident Reports</div>
+                  <div class="kpi-number-row"><span class="kpi-number">18 Logged</span><span class="kpi-trend-pill green">+4 Today</span></div>
+                </div>
+              </div>
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-blue text-cyan"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Ground Verified</div>
+                  <div class="kpi-number-row"><span class="kpi-number">14 Confirmed</span><span class="kpi-trend-pill green">88% True</span></div>
+                </div>
+              </div>
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-yellow text-yellow"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Surcharged Underpasses</div>
+                  <div class="kpi-number-row"><span class="kpi-number">4 Sumps</span><span class="kpi-trend-pill yellow">Critical</span></div>
+                </div>
+              </div>
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-red text-red"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Emergency Response Time</div>
+                  <div class="kpi-number-row"><span class="kpi-number">14 min</span><span class="kpi-trend-pill red">Live Dispatch</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1. Submit Field / Citizen Flood Report Section -->
+            <section id="sec-submit-report" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-bullhorn text-blue"></i> Submit Field / Citizen Flood Report</h3>
+                <span style="font-size: 11px; color: #64748b; font-weight: 600;">Crowd-sourced &amp; Field Staff Ingestion</span>
+              </div>
+              <form id="form-crowd-report" onsubmit="return false;">
+                <div class="reports-form-row">
+                  <div class="report-form-group" style="flex: 1.2;">
+                    <label>Incident Location</label>
+                    <select class="report-input-field" id="report-input-location">
+                      <option value="Minto Bridge Underpass">Minto Bridge Railway Underpass Sump</option>
+                      <option value="ITO Ring Road Junction">ITO Ring Road Lowland Crossing</option>
+                      <option value="Kashmere Gate ISBT">Kashmere Gate Transit Terminal</option>
+                      <option value="Pul Prahladpur Underpass">Pul Prahladpur Railway Culvert</option>
+                      <option value="Yamuna Bazar Ghat">Yamuna Bazar &amp; Nigambodh Ghat</option>
+                      <option value="Zakhira Underpass">Zakhira Underpass Depression</option>
+                    </select>
+                  </div>
+                  <div class="report-form-group" style="flex: 1;">
+                    <label>Drainage Outlet Condition</label>
+                    <select class="report-input-field" id="report-input-drain-status">
+                      <option value="Surcharged (Water Gushing Back)">Surcharged (Water Gushing Back)</option>
+                      <option value="Completely Blocked by Silt/Trash">Completely Blocked by Silt/Trash</option>
+                      <option value="Slow Drainage / Ponding">Slow Drainage / Ponding</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="report-form-group">
+                  <label>Estimated Inundation Depth: <strong id="lbl-report-depth" style="color: var(--primary-blue);">0.65 m</strong></label>
+                  <input type="range" id="report-input-depth" min="0.1" max="2.5" step="0.05" value="0.65" style="width: 100%; accent-color: var(--primary-blue);">
+                </div>
+                <div class="report-form-group">
+                  <label>Incident Observations / Impact Description</label>
+                  <textarea class="report-input-field" id="report-input-desc" rows="3" placeholder="Describe stalled vehicles, inundated lanes, water level rise, or pump operational status..."></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+                  <button type="button" id="btn-submit-crowd-report" class="btn-submit-report">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Incident Report
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <!-- 2. Verified Ground Truth Reports Feed Section -->
+            <section id="sec-verified-reports" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-list-check text-green"></i> Verified Ground Truth Reports</h3>
+                <span class="badge-status-table green" id="badge-total-reports">Live Sync</span>
+              </div>
+              <div class="table-scroll-wrap">
+                <table class="drain-capacity-table" id="table-incident-reports">
+                  <thead>
+                    <tr>
+                      <th>Report ID</th>
+                      <th>Location</th>
+                      <th>Observed Depth</th>
+                      <th>Drain Status</th>
+                      <th>Verification</th>
+                      <th>Report Time</th>
+                      <th>Response Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody-incident-reports">
+                    <tr>
+                      <td><strong>REP-8821</strong></td>
+                      <td>Minto Bridge Underpass</td>
+                      <td><strong style="color: #ef4444;">0.85 m</strong></td>
+                      <td>Surcharged (Backflow)</td>
+                      <td><span class="badge-status-table red">VERIFIED</span></td>
+                      <td>Just now</td>
+                      <td>DJB Super-sucker Dispatched</td>
+                    </tr>
+                    <tr>
+                      <td><strong>REP-8819</strong></td>
+                      <td>ITO Ring Road Junction</td>
+                      <td><strong style="color: #f59e0b;">0.42 m</strong></td>
+                      <td>Slow Drainage / Silt</td>
+                      <td><span class="badge-status-table amber">VERIFIED</span></td>
+                      <td>5 min ago</td>
+                      <td>Traffic Diverted to Vikas Marg</td>
+                    </tr>
+                    <tr>
+                      <td><strong>REP-8815</strong></td>
+                      <td>Kashmere Gate ISBT</td>
+                      <td><strong style="color: #ef4444;">0.70 m</strong></td>
+                      <td>Grating Surcharged</td>
+                      <td><span class="badge-status-table red">VERIFIED</span></td>
+                      <td>12 min ago</td>
+                      <td>Inlet Grating Cleared</td>
+                    </tr>
+                    <tr>
+                      <td><strong>REP-8812</strong></td>
+                      <td>Pul Prahladpur Culvert</td>
+                      <td><strong style="color: #ef4444;">0.95 m</strong></td>
+                      <td>Complete Submersion</td>
+                      <td><span class="badge-status-table red">VERIFIED</span></td>
+                      <td>18 min ago</td>
+                      <td>Road Barricaded by Police</td>
+                    </tr>
+                    <tr>
+                      <td><strong>REP-8810</strong></td>
+                      <td>Yamuna Bazar Ghat</td>
+                      <td><strong style="color: #0284c7;">0.30 m</strong></td>
+                      <td>High River Level (204.8m)</td>
+                      <td><span class="badge-status-table blue">MONITORED</span></td>
+                      <td>25 min ago</td>
+                      <td>NDRF Recon Boat Standby</td>
+                    </tr>
+                    <tr>
+                      <td><strong>REP-8806</strong></td>
+                      <td>Zakhira Underpass</td>
+                      <td><strong style="color: #f59e0b;">0.55 m</strong></td>
+                      <td>Pump Failure (Restored)</td>
+                      <td><span class="badge-status-table amber">VERIFIED</span></td>
+                      <td>34 min ago</td>
+                      <td>Station P-04 Dewatering Active</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- 3. Satellite SAR Flood Verification Section -->
+            <section id="sec-satellite-sar" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-satellite text-blue"></i> Sentinel-1 SAR Satellite Verification &amp; Co-registration</h3>
+                <span class="badge-status-table blue">Orbit Pass #147</span>
+              </div>
+              <p style="font-size: 12px; color: #64748b; margin-top: -6px; margin-bottom: 14px; line-height: 1.5;">
+                European Space Agency (ESA) Sentinel-1 C-band Synthetic Aperture Radar (5.405 GHz) cloud-penetrating microwave imagery cross-validated with in-situ ultrasonic gauges.
+              </p>
+
+              <div class="sar-meta-strip">
+                <div class="sar-meta-item">
+                  <span class="sar-meta-lbl">Satellite Sensor</span>
+                  <span class="sar-meta-val">Sentinel-1A SAR (C-Band)</span>
+                </div>
+                <div class="sar-meta-item">
+                  <span class="sar-meta-lbl">Pixel Resolution</span>
+                  <span class="sar-meta-val">10m Ground Resolution</span>
+                </div>
+                <div class="sar-meta-item">
+                  <span class="sar-meta-lbl">Polarization</span>
+                  <span class="sar-meta-val">VV + VH Dual-Pol</span>
+                </div>
+                <div class="sar-meta-item">
+                  <span class="sar-meta-lbl">Water Threshold</span>
+                  <span class="sar-meta-val">&sigma;₀ &lt; -16.5 dB (Otsu)</span>
+                </div>
+                <div class="sar-meta-item">
+                  <span class="sar-meta-lbl">Total Water Polygon</span>
+                  <span class="sar-meta-val" style="color: #0284c7;">12.6 km² Inundation</span>
+                </div>
+              </div>
+
+              <div class="table-scroll-wrap" style="margin-top: 14px;">
+                <table class="drain-capacity-table">
+                  <thead>
+                    <tr>
+                      <th>Monitoring Corridor</th>
+                      <th>SAR Radar Classification</th>
+                      <th>Backscatter (&sigma;₀)</th>
+                      <th>In-Situ Gauge Depth</th>
+                      <th>Ground Verification Match</th>
+                      <th>Confidence Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Yamuna River Floodplain Reach</strong></td>
+                      <td>Open Water Surface Extent</td>
+                      <td>-21.4 dB</td>
+                      <td>204.80 m (River Level)</td>
+                      <td><span class="badge-status-table green">CONFIRMED MATCH</span></td>
+                      <td><strong style="color: #10b981;">98.4 %</strong></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Minto Bridge Railway Sump</strong></td>
+                      <td>Urban Sump Inundation Mask</td>
+                      <td>-17.8 dB</td>
+                      <td>0.85 m (Ultrasonic Gauge)</td>
+                      <td><span class="badge-status-table green">CONFIRMED MATCH</span></td>
+                      <td><strong style="color: #10b981;">95.2 %</strong></td>
+                    </tr>
+                    <tr>
+                      <td><strong>ITO Ring Road Lowland Crossing</strong></td>
+                      <td>Saturated Asphalt &amp; Waterlogging</td>
+                      <td>-16.9 dB</td>
+                      <td>0.42 m (Staff Gauge)</td>
+                      <td><span class="badge-status-table green">CONFIRMED MATCH</span></td>
+                      <td><strong style="color: #10b981;">92.0 %</strong></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Kashmere Gate ISBT Culvert</strong></td>
+                      <td>Ponded Transit Apron</td>
+                      <td>-17.2 dB</td>
+                      <td>0.70 m (Pressure Transducer)</td>
+                      <td><span class="badge-status-table green">CONFIRMED MATCH</span></td>
+                      <td><strong style="color: #10b981;">94.1 %</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- 4. CCTV Sump Feeds Section -->
+            <section id="sec-cctv-feeds" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-video text-blue"></i> Live CCTV &amp; Optical Staff Gauge Surveillance</h3>
+                <span class="badge-status-table green">4 Nodes Online</span>
+              </div>
+              <div class="cctv-grid">
+                <!-- Cam 1 -->
+                <div class="cctv-card">
+                  <div class="cctv-card-top">
+                    <span class="cctv-id"><i class="fa-solid fa-camera"></i> CAM-01: Minto Bridge</span>
+                    <span class="cctv-live-badge"><span class="cctv-live-dot"></span> 1080p Live</span>
+                  </div>
+                  <div class="cctv-preview-box">
+                    <div class="cctv-reticle-overlay">
+                      <span class="cctv-gauge-tag red-tag">Optical Gauge: 0.85 m (CRITICAL)</span>
+                      <span class="cctv-sub-tag">Lane 1 &amp; 2 Closed</span>
+                    </div>
+                  </div>
+                  <div class="cctv-card-bot">
+                    <div><span>Location:</span> <strong>Railway Culvert Sump</strong></div>
+                    <div><span>Pumps:</span> <strong style="color: #ef4444;">3/3 Running (100%)</strong></div>
+                  </div>
+                </div>
+
+                <!-- Cam 2 -->
+                <div class="cctv-card">
+                  <div class="cctv-card-top">
+                    <span class="cctv-id"><i class="fa-solid fa-camera"></i> CAM-04: ITO Ring Road</span>
+                    <span class="cctv-live-badge"><span class="cctv-live-dot"></span> 1080p Live</span>
+                  </div>
+                  <div class="cctv-preview-box">
+                    <div class="cctv-reticle-overlay">
+                      <span class="cctv-gauge-tag amber-tag">Optical Gauge: 0.42 m (WARNING)</span>
+                      <span class="cctv-sub-tag">Slow Traffic Flow</span>
+                    </div>
+                  </div>
+                  <div class="cctv-card-bot">
+                    <div><span>Location:</span> <strong>Drain 12 Outfall</strong></div>
+                    <div><span>Pumps:</span> <strong style="color: #f59e0b;">2/2 Running (85%)</strong></div>
+                  </div>
+                </div>
+
+                <!-- Cam 3 -->
+                <div class="cctv-card">
+                  <div class="cctv-card-top">
+                    <span class="cctv-id"><i class="fa-solid fa-camera"></i> CAM-07: Pul Prahladpur</span>
+                    <span class="cctv-live-badge"><span class="cctv-live-dot"></span> 1080p Live</span>
+                  </div>
+                  <div class="cctv-preview-box">
+                    <div class="cctv-reticle-overlay">
+                      <span class="cctv-gauge-tag red-tag">Optical Gauge: 0.95 m (SUBMERGED)</span>
+                      <span class="cctv-sub-tag">Police Barricaded</span>
+                    </div>
+                  </div>
+                  <div class="cctv-card-bot">
+                    <div><span>Location:</span> <strong>Railway Underpass</strong></div>
+                    <div><span>Pumps:</span> <strong style="color: #ef4444;">4/4 Running (100%)</strong></div>
+                  </div>
+                </div>
+
+                <!-- Cam 4 -->
+                <div class="cctv-card">
+                  <div class="cctv-card-top">
+                    <span class="cctv-id"><i class="fa-solid fa-camera"></i> CAM-09: Kashmere Gate</span>
+                    <span class="cctv-live-badge"><span class="cctv-live-dot"></span> 1080p Live</span>
+                  </div>
+                  <div class="cctv-preview-box">
+                    <div class="cctv-reticle-overlay">
+                      <span class="cctv-gauge-tag amber-tag">Optical Gauge: 0.70 m (ALERT)</span>
+                      <span class="cctv-sub-tag">Inlet Silt Cleared</span>
+                    </div>
+                  </div>
+                  <div class="cctv-card-bot">
+                    <div><span>Location:</span> <strong>ISBT Transit Ring</strong></div>
+                    <div><span>Pumps:</span> <strong style="color: #10b981;">QRT Active (75%)</strong></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 5. Automated Drainage Pump & Sump Station Logs Section -->
+            <section id="sec-pump-stations" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-gears text-blue"></i> Automated Municipal Drainage Pump &amp; Sump Station Operations</h3>
+                <span class="badge-status-table green">4 Stations Operational</span>
+              </div>
+              <div class="pump-grid">
+                <!-- Pump 1 -->
+                <div class="pump-card">
+                  <div class="pump-card-head">
+                    <div>
+                      <h4 class="pump-title">Station P-01 (Minto Bridge)</h4>
+                      <div class="pump-subtitle">3x 150 HP Submersible Dewatering Units</div>
+                    </div>
+                    <span class="badge-status-table red">100% OVERLOAD</span>
+                  </div>
+                  <div class="pump-bar-row">
+                    <div class="pump-bar-label"><span>Pump Load Capacity</span><strong>100%</strong></div>
+                    <div class="pump-bar-track"><div class="pump-bar-fill red" style="width: 100%;"></div></div>
+                  </div>
+                  <div class="pump-meta-grid">
+                    <div><span>Discharge Rate:</span> <strong>420 L/s</strong></div>
+                    <div><span>Power Source:</span> <strong>Diesel Gen 250 kVA</strong></div>
+                    <div><span>Sump Level:</span> <strong style="color: #ef4444;">0.85 m</strong></div>
+                    <div><span>Last Serviced:</span> <strong>28 Oct 2026</strong></div>
+                  </div>
+                </div>
+
+                <!-- Pump 2 -->
+                <div class="pump-card">
+                  <div class="pump-card-head">
+                    <div>
+                      <h4 class="pump-title">Station P-02 (ITO Vikas Marg)</h4>
+                      <div class="pump-subtitle">2x 120 HP Centrifugal Storm Pumps</div>
+                    </div>
+                    <span class="badge-status-table amber">85% HIGH LOAD</span>
+                  </div>
+                  <div class="pump-bar-row">
+                    <div class="pump-bar-label"><span>Pump Load Capacity</span><strong>85%</strong></div>
+                    <div class="pump-bar-track"><div class="pump-bar-fill amber" style="width: 85%;"></div></div>
+                  </div>
+                  <div class="pump-meta-grid">
+                    <div><span>Discharge Rate:</span> <strong>280 L/s</strong></div>
+                    <div><span>Power Source:</span> <strong>Grid (Utility 415V)</strong></div>
+                    <div><span>Sump Level:</span> <strong style="color: #f59e0b;">0.42 m</strong></div>
+                    <div><span>Last Serviced:</span> <strong>29 Oct 2026</strong></div>
+                  </div>
+                </div>
+
+                <!-- Pump 3 -->
+                <div class="pump-card">
+                  <div class="pump-card-head">
+                    <div>
+                      <h4 class="pump-title">Station P-03 (Pul Prahladpur)</h4>
+                      <div class="pump-subtitle">4x 80 HP High-Volume Storm Sump Pumps</div>
+                    </div>
+                    <span class="badge-status-table red">100% CRITICAL</span>
+                  </div>
+                  <div class="pump-bar-row">
+                    <div class="pump-bar-label"><span>Pump Load Capacity</span><strong>100%</strong></div>
+                    <div class="pump-bar-track"><div class="pump-bar-fill red" style="width: 100%;"></div></div>
+                  </div>
+                  <div class="pump-meta-grid">
+                    <div><span>Discharge Rate:</span> <strong>360 L/s</strong></div>
+                    <div><span>Power Source:</span> <strong>Dual Grid + Backup</strong></div>
+                    <div><span>Sump Level:</span> <strong style="color: #ef4444;">0.95 m</strong></div>
+                    <div><span>Last Serviced:</span> <strong>30 Oct 2026</strong></div>
+                  </div>
+                </div>
+
+                <!-- Pump 4 -->
+                <div class="pump-card">
+                  <div class="pump-card-head">
+                    <div>
+                      <h4 class="pump-title">Station P-04 (Zakhira Underpass)</h4>
+                      <div class="pump-subtitle">2x 100 HP Axial Flow Dewatering Pumps</div>
+                    </div>
+                    <span class="badge-status-table green">70% NORMAL</span>
+                  </div>
+                  <div class="pump-bar-row">
+                    <div class="pump-bar-label"><span>Pump Load Capacity</span><strong>70%</strong></div>
+                    <div class="pump-bar-track"><div class="pump-bar-fill green" style="width: 70%;"></div></div>
+                  </div>
+                  <div class="pump-meta-grid">
+                    <div><span>Discharge Rate:</span> <strong>190 L/s</strong></div>
+                    <div><span>Power Source:</span> <strong>Grid (Utility 415V)</strong></div>
+                    <div><span>Sump Level:</span> <strong style="color: #10b981;">0.28 m</strong></div>
+                    <div><span>Last Serviced:</span> <strong>31 Oct 2026</strong></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 6. Municipal Emergency Dispatch & Inter-Agency Coordination Log Section -->
+            <section id="sec-dispatch-log" class="analytics-box-white">
+              <div class="analytics-box-head">
+                <h3><i class="fa-solid fa-truck-medical text-blue"></i> Municipal Emergency Dispatch &amp; Inter-Agency Coordination Log</h3>
+                <span style="font-size: 11px; color: #64748b; font-weight: 600;">Live Coordination Feed</span>
+              </div>
+              <div class="dispatch-stream-list">
+                <div class="dispatch-item">
+                  <div class="dispatch-time-badge">06:14 AM</div>
+                  <div class="dispatch-content">
+                    <div class="dispatch-agency-row">
+                      <span class="agency-tag blue-tag">Delhi Jal Board (DJB)</span>
+                      <span class="dispatch-target">Target: Minto Bridge Underpass</span>
+                    </div>
+                    <div class="dispatch-desc">Dispatched 2 high-capacity mobile dewatering super-sucker vehicles (DL-1M-4421 &amp; DL-1M-4428) to assist stationary sump pumps at railway culvert.</div>
+                  </div>
+                </div>
+
+                <div class="dispatch-item">
+                  <div class="dispatch-time-badge">06:08 AM</div>
+                  <div class="dispatch-content">
+                    <div class="dispatch-agency-row">
+                      <span class="agency-tag orange-tag">Delhi Traffic Police</span>
+                      <span class="dispatch-target">Target: ITO &amp; Vikas Marg Corridor</span>
+                    </div>
+                    <div class="dispatch-desc">Emergency traffic diversion alert issued on FM radio and digital advisory signboards. Eastbound traffic diverted towards Geeta Colony and Laxmi Nagar.</div>
+                  </div>
+                </div>
+
+                <div class="dispatch-item">
+                  <div class="dispatch-time-badge">05:52 AM</div>
+                  <div class="dispatch-content">
+                    <div class="dispatch-agency-row">
+                      <span class="agency-tag green-tag">PWD Quick Response Team (QRT)</span>
+                      <span class="dispatch-target">Target: Kashmere Gate Drain No. 6</span>
+                    </div>
+                    <div class="dispatch-desc">Emergency maintenance crew completed desilting and clearing plastic debris blockage from inlet grating #3, restoring gravity flow into trunk canal.</div>
+                  </div>
+                </div>
+
+                <div class="dispatch-item">
+                  <div class="dispatch-time-badge">05:35 AM</div>
+                  <div class="dispatch-content">
+                    <div class="dispatch-agency-row">
+                      <span class="agency-tag red-tag">NDRF 8th Battalion</span>
+                      <span class="dispatch-target">Target: Yamuna Bazar &amp; Nigambodh</span>
+                    </div>
+                    <div class="dispatch-desc">Inflatable motorized rescue boat and 12 disaster response personnel positioned on standby at Yamuna riverbank in response to 204.80m warning gauge mark.</div>
+                  </div>
+                </div>
+
+                <div class="dispatch-item">
+                  <div class="dispatch-time-badge">05:10 AM</div>
+                  <div class="dispatch-content">
+                    <div class="dispatch-agency-row">
+                      <span class="agency-tag blue-tag">Irrigation &amp; Flood Control (I&amp;FC)</span>
+                      <span class="dispatch-target">Target: Wazirabad Barrage Control</span>
+                    </div>
+                    <div class="dispatch-desc">Discharge gates 4 and 6 opened to release 45,000 cusecs downstream to regulate upstream river swelling ahead of IMD rainfall peak.</div>
+                  </div>
+                </div>
+
+                <div class="dispatch-item">
+                  <div class="dispatch-time-badge">04:45 AM</div>
+                  <div class="dispatch-content">
+                    <div class="dispatch-agency-row">
+                      <span class="agency-tag purple-tag">IMD Doppler Weather Radar</span>
+                      <span class="dispatch-target">Target: Delhi NCT Catchment</span>
+                    </div>
+                    <div class="dispatch-desc">Level 3 Orange Flash Flood Watch issued for Safdarjung, Palam, and Yamuna catchment basins with expected rainfall intensity peaking at 48 mm/h.</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============================================== -->
+      <!-- 4.5 AI CHATBOT WORKSPACE VIEW                  -->
+      <!-- ============================================== -->
+      <div id="tab-view-chatbot" class="dashboard-scrollable-canvas hidden">
+        <!-- Header -->
+        <div class="workspace-header-bar">
+          <div class="workspace-header-left">
+            <div class="workspace-badge"><i class="fa-solid fa-robot"></i> AI HYDRO-ASSISTANT</div>
+            <h2 class="workspace-title">Aagaah AI • Delhi Flood Intelligence & Incident Assistant</h2>
+            <p class="workspace-subtitle">Conversational AI assistant for real-time flood nowcasting, Yamuna river stage, drain surcharge telemetry, and emergency evacuation corridors.</p>
+          </div>
+          <div class="workspace-header-right">
+            <span class="badge-tag-verified" style="display:inline-flex; align-items:center; gap:8px; padding:7px 14px; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; border-radius:20px; font-weight:700; font-size:12px; margin-right:10px;">
+              <span class="ai-status-pulse"></span> AquaPredict Engine Online
+            </span>
+            <button id="btn-clear-chat" class="subview-btn active" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">
+              <i class="fa-solid fa-arrow-rotate-left"></i> Reset Conversation
+            </button>
+          </div>
+        </div>
+
+        <div class="analytics-layout">
+          <!-- Left side telemetry & quick questions column -->
+          <aside class="side-col">
+            <!-- Hydro Telemetry Summary -->
+            <div class="side-card">
+              <div class="side-card-title"><i class="fa-solid fa-wave-square text-blue"></i> Live Hydro Telemetry</div>
+              <div class="side-metrics">
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Yamuna River Stage</span>
+                  <span class="quick-stat-val text-red">205.85 m</span>
+                  <span class="quick-stat-sub">⚠️ Danger Mark: 205.33 m</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Doppler Rain Rate</span>
+                  <span class="quick-stat-val text-blue">24.5 mm/hr</span>
+                  <span class="quick-stat-sub">Safdarjung Radar (48 dBZ)</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Critical Underpass</span>
+                  <span class="quick-stat-val text-red">Minto (0.85m)</span>
+                  <span class="quick-stat-sub">Underpass Traffic Halted</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Surcharged Drains</span>
+                  <span class="quick-stat-val text-yellow">4 of 8</span>
+                  <span class="quick-stat-sub">Shahdara & Sen Outfalls</span>
+                </div>
+                <div class="quick-stat-item">
+                  <span class="quick-stat-label">Dewatering Pumps</span>
+                  <span class="quick-stat-val text-green">14 / 16</span>
+                  <span class="quick-stat-sub">100% Sump Load Active</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Questions to Ask -->
+            <div class="side-card">
+              <div class="side-card-title"><i class="fa-solid fa-lightbulb text-yellow"></i> Suggested Inquiries</div>
+              <p style="font-size: 11px; color: #64748b; margin: 0 0 10px 0; line-height: 1.4;">Click any prompt to instantly query the AI assistant:</p>
+              <div class="chat-prompt-list">
+                <button class="chat-prompt-chip" data-prompt="What is the current water level at Minto Bridge underpass?">
+                  <i class="fa-solid fa-comment-dots"></i>
+                  <span>Minto Bridge depth & status</span>
+                </button>
+                <button class="chat-prompt-chip" data-prompt="Is Yamuna river flowing above the danger mark?">
+                  <i class="fa-solid fa-water"></i>
+                  <span>Yamuna River flood stage</span>
+                </button>
+                <button class="chat-prompt-chip" data-prompt="Which drainage canals and outfalls are currently surcharged?">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Surcharged drains status</span>
+                </button>
+                <button class="chat-prompt-chip" data-prompt="What is the safest flood-free route from CP to Kashmere Gate?">
+                  <i class="fa-solid fa-route"></i>
+                  <span>Safest route CP to ISBT</span>
+                </button>
+                <button class="chat-prompt-chip" data-prompt="Show emergency helpline numbers and flood relief camp locations in Delhi.">
+                  <i class="fa-solid fa-phone-volume"></i>
+                  <span>Emergency helplines & camps</span>
+                </button>
+                <button class="chat-prompt-chip" data-prompt="What is the rainfall forecast and Doppler radar nowcast for the next 2 hours?">
+                  <i class="fa-solid fa-cloud-showers-heavy"></i>
+                  <span>2-Hour rain nowcast</span>
+                </button>
+                <button class="chat-prompt-chip" data-prompt="Are municipal dewatering sump pumps operational at critical underpasses?">
+                  <i class="fa-solid fa-gears"></i>
+                  <span>Sump pump operations</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Model Info -->
+            <div class="side-card" style="font-size: 11px; color: #64748b; line-height: 1.5;">
+              <div style="font-weight: 700; color: #1e293b; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-microchip text-blue"></i> Model Specifications
+              </div>
+              <div><strong>Core:</strong> AquaPredict Hydro-4o</div>
+              <div><strong>Knowledge:</strong> CWC, IMD, DDMA, GIS DEM</div>
+              <div><strong>Latency:</strong> ~180ms</div>
+              <div><strong>Multilingual:</strong> English, हिन्दी / Hinglish</div>
+            </div>
+          </aside>
+
+          <!-- Main Chat column -->
+          <div class="page-body">
+            <!-- 4 Top KPI Cards for Chatbot -->
+            <div class="analytics-metrics-four">
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-blue text-primary-blue"><i class="fa-solid fa-brain"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">AI System Health</div>
+                  <div class="kpi-number-row"><span class="kpi-number">99.8% Online</span><span class="kpi-trend-pill green">Active</span></div>
+                </div>
+              </div>
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-blue text-cyan"><i class="fa-solid fa-message"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Live Hydro Queries</div>
+                  <div class="kpi-number-row"><span class="kpi-number">184 Processed</span><span class="kpi-trend-pill green">+28/hr</span></div>
+                </div>
+              </div>
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-yellow text-yellow"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Hydraulic Verification</div>
+                  <div class="kpi-number-row"><span class="kpi-number">100% Synced</span><span class="kpi-trend-pill green">CWC Verified</span></div>
+                </div>
+              </div>
+              <div class="kpi-card-white">
+                <div class="kpi-icon-square bg-light-green text-green"><i class="fa-solid fa-bolt"></i></div>
+                <div class="kpi-text-block">
+                  <div class="kpi-label">Average Response Time</div>
+                  <div class="kpi-number-row"><span class="kpi-number">180 ms</span><span class="kpi-trend-pill green">Ultra Fast</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chatbot Interface Main Card -->
+            <div class="analytics-box-white chat-window-container" style="display: flex; flex-direction: column; min-height: 600px; padding: 0; overflow: hidden; border-radius: 10px;">
+              <!-- Chat Container Header -->
+              <div class="chat-window-header" style="padding: 14px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #fafbfc;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 38px; height: 38px; border-radius: 8px; background: linear-gradient(135deg, #1e3a8a, #0284c7); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
+                    <i class="fa-solid fa-robot"></i>
+                  </div>
+                  <div>
+                    <div style="font-weight: 800; font-size: 14px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                      Aagaah AI Assistant
+                      <span style="font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #e0f2fe; color: #0284c7;">Hydro-v2.4</span>
+                    </div>
+                    <div style="font-size: 11.5px; color: #64748b;">Ground truth telemetry from CWC, IMD Safdarjung, PWD & DJB Sensors</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button id="btn-copy-chat" class="subview-btn" style="padding: 5px 10px; font-size: 11.5px; background: #f8fafc; border: 1px solid #cbd5e1; color: #475569;" title="Copy Conversation">
+                    <i class="fa-solid fa-copy"></i> Copy
+                  </button>
+                </div>
+              </div>
+
+              <!-- Message History Scroll Area -->
+              <div id="chat-messages-container" class="chat-messages-scroll" style="flex: 1; padding: 20px; overflow-y: auto; max-height: 480px; display: flex; flex-direction: column; gap: 16px; background: #ffffff;">
+                <!-- Initial Bot Greeting Bubble -->
+                <div class="chat-msg chat-msg-bot">
+                  <div class="chat-msg-avatar"><i class="fa-solid fa-robot"></i></div>
+                  <div class="chat-msg-content">
+                    <div class="chat-msg-meta">
+                      <span class="chat-msg-sender">Aagaah AI</span>
+                      <span class="chat-msg-time">Just now</span>
+                    </div>
+                    <div class="chat-msg-bubble">
+                      <p style="margin: 0 0 10px 0; font-weight: 600;">Namaste! I am <strong>Aagaah AI</strong>, your real-time hydrological assistant for the Delhi Urban Flood Monitoring System.</p>
+                      <p style="margin: 0 0 8px 0;">I have live telemetry synced with the Delhi Irrigation & Flood Control Dept (I&FC), CWC river gauges, IMD Safdarjung Doppler radar, and municipal dewatering sump stations. You can ask me in English or हिन्दी / Hinglish:</p>
+                      <ul style="margin: 0 0 12px 18px; padding: 0; line-height: 1.6;">
+                        <li><strong>Underpass Inundation:</strong> Current water depth at Minto Bridge, Pul Prahladpur, Tilak Bridge, or Zakhira.</li>
+                        <li><strong>Yamuna River Stage:</strong> Water level at Old Railway Bridge (Loha Pul) vs Danger Mark (205.33 m) & Hathnikund discharge.</li>
+                        <li><strong>Drainage Network:</strong> Najafgarh, Barapullah, and Shahdara surcharge and backflow telemetry.</li>
+                        <li><strong>Flood-Safe Routes:</strong> Safest elevated corridors for emergency transit avoiding inundated culverts.</li>
+                        <li><strong>Emergency Helplines:</strong> 24x7 DDMA control rooms, rescue camps, and nodal officer contacts.</li>
+                      </ul>
+                      <p style="margin: 0; font-size: 12px; color: #64748b;"><em>Tip: Click any suggested query below or type your question in the box to get instant answers.</em></p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Typing indicator -->
+                <div id="chat-typing-indicator" class="chat-msg chat-msg-bot" style="display: none;">
+                  <div class="chat-msg-avatar"><i class="fa-solid fa-robot"></i></div>
+                  <div class="chat-msg-content">
+                    <div class="chat-typing-bubble">
+                      <span class="dot"></span>
+                      <span class="dot"></span>
+                      <span class="dot"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Suggestion Pill Chips Bar -->
+              <div class="chat-suggestions-bar" style="padding: 10px 20px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; gap: 8px; overflow-x: auto; flex-wrap: nowrap;">
+                <button class="chat-suggest-pill" data-text="What is the current water level at Minto Bridge?"><i class="fa-solid fa-gauge-high"></i> Minto Bridge Water Depth</button>
+                <button class="chat-suggest-pill" data-text="Is Yamuna river flowing above the danger mark?"><i class="fa-solid fa-water"></i> Yamuna Danger Mark</button>
+                <button class="chat-suggest-pill" data-text="Which drainage networks are currently surcharged?"><i class="fa-solid fa-triangle-exclamation"></i> Surcharged Drains</button>
+                <button class="chat-suggest-pill" data-text="What is the safest flood-free route from CP to Kashmere Gate?"><i class="fa-solid fa-route"></i> Safest Route CP to ISBT</button>
+                <button class="chat-suggest-pill" data-text="Show emergency helpline numbers and relief camp locations."><i class="fa-solid fa-phone"></i> Emergency Helplines</button>
+              </div>
+
+              <!-- Chat Input Bar -->
+              <div class="chat-input-bar" style="padding: 14px 20px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; gap: 12px; align-items: flex-end;">
+                <div style="flex: 1; position: relative;">
+                  <textarea id="chat-user-input" class="chat-textarea" placeholder="Ask Aagaah AI about Delhi waterlogging, river stages, safe routes... (Press Enter to send)" rows="1" style="width: 100%; resize: none; padding: 12px 16px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; line-height: 1.4; outline: none; transition: border-color 0.2s; max-height: 120px;"></textarea>
+                </div>
+                <button id="btn-chat-send" class="subview-btn active" style="height: 44px; padding: 0 20px; background: var(--primary-blue); color: #fff; font-weight: 700; border-radius: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: none;">
+                  <span>Send</span>
+                  <i class="fa-solid fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ============================================== -->
+      <!-- 5. SETTINGS WORKSPACE VIEW                     -->
+      <!-- ============================================== -->
+      <div id="tab-view-settings" class="dashboard-scrollable-canvas hidden">
+        <!-- Header -->
+        <div class="workspace-header-bar">
+          <div class="workspace-header-left">
+            <div class="workspace-badge"><i class="fa-solid fa-gear"></i> CONFIGURATION</div>
+            <h2 class="workspace-title">System Architecture & Hydraulic Solver Configuration</h2>
+            <p class="workspace-subtitle">Configure 2D hydrodynamic solver parameters, telemetry refresh intervals, and system diagnostics.</p>
+          </div>
+          <div class="workspace-header-right">
+            <button id="btn-save-settings-action" class="subview-btn active" style="background: var(--primary-blue); color: #fff;">
+              <i class="fa-solid fa-floppy-disk"></i> Save Configuration
+            </button>
+          </div>
+        </div>
+
+        <!-- Settings Layout Grid -->
+        <div class="settings-layout-grid">
+          <!-- Solver Parameters -->
+          <div class="analytics-box-white">
+            <div class="analytics-box-head">
+              <h3><i class="fa-solid fa-sliders text-blue"></i> Hydrodynamic Solver Parameters</h3>
+            </div>
+            <div class="setting-item-row">
+              <div class="setting-label-block">
+                <div class="name">Manning's Roughness Coefficient (n)</div>
+                <div class="desc">Urban paved impervious channels friction factor</div>
+              </div>
+              <input type="number" class="setting-control-input" value="0.035" step="0.005" min="0.01" max="0.10">
+            </div>
+            <div class="setting-item-row">
+              <div class="setting-label-block">
+                <div class="name">CFL Stability Factor (C)</div>
+                <div class="desc">Courant-Friedrichs-Lewy numerical convergence limit</div>
+              </div>
+              <input type="number" class="setting-control-input" value="0.75" step="0.05" min="0.1" max="1.0">
+            </div>
+            <div class="setting-item-row">
+              <div class="setting-label-block">
+                <div class="name">Time Step Resolution (&Delta;t)</div>
+                <div class="desc">2D shallow water differential integration step</div>
+              </div>
+              <input type="number" class="setting-control-input" value="1.0" step="0.1" min="0.1" max="10.0">
+            </div>
+            <div class="setting-item-row">
+              <div class="setting-label-block">
+                <div class="name">Critical Depth Alarm Threshold</div>
+                <div class="desc">Water depth triggering automatic evacuation alert</div>
+              </div>
+              <input type="number" class="setting-control-input" value="0.50" step="0.05" min="0.1" max="2.0">
+            </div>
+          </div>
+
+          <!-- API Diagnostic Health Matrix -->
+          <div class="analytics-box-white">
+            <div class="analytics-box-head">
+              <h3><i class="fa-solid fa-server text-green"></i> Backend Microservice Endpoints Health</h3>
+              <span class="badge-status-table green">All 200 OK</span>
+            </div>
+            <div class="api-health-list">
+              <div class="api-health-pill"><span class="endpoint">/api/gis/danger-zones</span><span class="status-ok"><i class="fa-solid fa-circle-check"></i> 12ms</span></div>
+              <div class="api-health-pill"><span class="endpoint">/api/simulation/current</span><span class="status-ok"><i class="fa-solid fa-circle-check"></i> 18ms</span></div>
+              <div class="api-health-pill"><span class="endpoint">/api/routes/flood-safe</span><span class="status-ok"><i class="fa-solid fa-circle-check"></i> 34ms</span></div>
+              <div class="api-health-pill"><span class="endpoint">/api/hydro/inspect</span><span class="status-ok"><i class="fa-solid fa-circle-check"></i> 9ms</span></div>
+              <div class="api-health-pill"><span class="endpoint">/api/radar/realtime</span><span class="status-ok"><i class="fa-solid fa-circle-check"></i> 15ms</span></div>
+              <div class="api-health-pill"><span class="endpoint">/api/reports</span><span class="status-ok"><i class="fa-solid fa-circle-check"></i> 8ms</span></div>
+              <div class="api-health-pill"><span class="endpoint">/api/weather/current</span><span class="status-ok"><i class="fa-solid fa-circle-check"></i> 14ms</span></div>
+              <div class="api-health-pill"><span class="endpoint">/api/health</span><span class="status-ok"><i class="fa-solid fa-circle-check"></i> 7ms</span></div>
+            </div>
+            <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end;">
+              <button id="btn-recalibrate-cache" class="subview-btn" style="background: #f1f5f9; color: #475569;">
+                <i class="fa-solid fa-rotate-right"></i> Recalibrate Engine Cache
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ============================================== -->
+    <!-- FLOATING ROUTE PLANNER MODAL                   -->
+    <!-- ============================================== -->
+    <div id="floating-route-panel" class="floating-route-panel hidden">
+      <div class="route-panel-header">
+        <div class="route-header-titles">
+          <div class="title-with-icon">
+            <i class="fa-solid fa-route text-cyan"></i>
+            <h3>FLOOD-SAFE ROUTE PLANNER</h3>
+          </div>
+          <p>Dynamic Hydrodynamic Flood Exposure Analysis</p>
+        </div>
+        <button id="btn-close-route-panel" class="panel-close-btn" title="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="route-panel-body">
+        <div class="vehicle-tabs">
+          <button class="v-tab active" data-v="ambulance"><i class="fa-solid fa-truck-medical"></i> Emergency</button>
+          <button class="v-tab" data-v="commuter"><i class="fa-solid fa-car"></i> Commuter</button>
+          <button class="v-tab" data-v="transit"><i class="fa-solid fa-bus"></i> Public Transit</button>
+        </div>
+
+        <div class="route-vehicle-row mt-2">
+          <label>VEHICLE TYPE:</label>
+          <select id="route-vehicle-select">
+            <option value="Ambulance" selected>Ambulance (Critical Priority — Depth &lt; 0.15m)</option>
+            <option value="Car">Passenger Car (Depth &lt; 0.25m)</option>
+            <option value="Bus">Public Transit Bus (Depth &lt; 0.45m)</option>
+          </select>
+        </div>
+
+        <div class="route-inputs-container mt-2">
+          <div class="input-with-pin">
+            <i class="fa-solid fa-location-dot origin-pin"></i>
+            <input type="text" id="route-origin" placeholder="Current location or search origin..." value="AIIMS Hospital" list="delhi-locations-list" autocomplete="off">
+            <button class="btn-geo" id="btn-swap-route-inputs" title="Swap Origin and Destination"><i class="fa-solid fa-arrow-right-arrow-left"></i></button>
+          </div>
+          <div class="input-with-pin mt-2">
+            <i class="fa-solid fa-flag-checkered dest-pin"></i>
+            <input type="text" id="route-destination" placeholder="Select destination or search..." value="Anand Vihar ISBT & Metro" list="delhi-locations-list" autocomplete="off">
+            <button class="btn-geo" id="btn-locate-dest" title="Select Landmark"><i class="fa-solid fa-magnifying-glass"></i></button>
+          </div>
+        </div>
+
+        <datalist id="delhi-locations-list">
+          <option value="AIIMS Hospital">AIIMS Hospital (South Delhi)</option>
+          <option value="Anand Vihar ISBT & Metro">Anand Vihar ISBT & Metro (East Delhi)</option>
+          <option value="Connaught Place Inner Circle">Connaught Place Inner Circle (Central Delhi)</option>
+          <option value="ISBT Kashmere Gate Transit Hub">ISBT Kashmere Gate Transit Hub (North Delhi)</option>
+          <option value="Safdarjung Hospital Trauma Center">Safdarjung Hospital Trauma Center</option>
+          <option value="LNJP Hospital / Delhi Gate">LNJP Hospital / Delhi Gate</option>
+          <option value="ITO Junction & Vikas Marg">ITO Junction & Vikas Marg</option>
+          <option value="New Delhi Railway Station">New Delhi Railway Station</option>
+          <option value="Delhi Airport (IGI T3)">Delhi Airport (IGI T3)</option>
+          <option value="Minto Bridge Underpass">Minto Bridge Underpass</option>
+          <option value="Pul Prahladpur Railway Underpass">Pul Prahladpur Railway Underpass</option>
+          <option value="Sarai Kale Khan ISBT">Sarai Kale Khan ISBT</option>
+          <option value="Karol Bagh Metro">Karol Bagh Metro</option>
+          <option value="Rohini West">Rohini West</option>
+          <option value="Saket District Centre">Saket District Centre</option>
+          <option value="Hauz Khas Complex">Hauz Khas Complex</option>
+          <option value="Nehru Place Bus Terminal">Nehru Place Bus Terminal</option>
+          <option value="Dhaula Kuan Interchange">Dhaula Kuan Interchange</option>
+          <option value="Red Fort Heritage">Red Fort Heritage</option>
+          <option value="India Gate Central Vista">India Gate Central Vista</option>
+          <option value="Janakpuri West">Janakpuri West</option>
+          <option value="GTB Hospital Shahdara">GTB Hospital Shahdara</option>
+        </datalist>
+
+        <!-- Quick Presets -->
+        <div class="quick-presets-row mt-2">
+          <span class="presets-label"><i class="fa-solid fa-bolt text-amber"></i> Quick Emergency & Corridor Presets:</span>
+          <div class="preset-chips">
+            <button class="preset-chip" data-orig="AIIMS Hospital" data-dest="Safdarjung Hospital Trauma Center"><i class="fa-solid fa-truck-medical text-green"></i> AIIMS &rarr; Safdarjung Trauma</button>
+            <button class="preset-chip" data-orig="AIIMS Hospital" data-dest="Anand Vihar ISBT & Metro"><i class="fa-solid fa-location-arrow text-cyan"></i> AIIMS &rarr; Anand Vihar</button>
+            <button class="preset-chip" data-orig="LNJP Hospital / Delhi Gate" data-dest="Connaught Place Inner Circle"><i class="fa-solid fa-hospital text-blue"></i> LNJP &rarr; Connaught Place</button>
+            <button class="preset-chip" data-orig="Connaught Place Inner Circle" data-dest="ISBT Kashmere Gate Transit Hub"><i class="fa-solid fa-route text-amber"></i> CP &rarr; Kashmere Gate</button>
+            <button class="preset-chip" data-orig="ITO Junction & Vikas Marg" data-dest="Anand Vihar ISBT & Metro"><i class="fa-solid fa-traffic-light text-red"></i> ITO &rarr; Anand Vihar</button>
+          </div>
+        </div>
+
+        <!-- Analyze Button -->
+        <button id="btn-run-route-analysis" class="btn-cyan-action mt-3">
+          <i class="fa-solid fa-route"></i> ANALYZE FLOOD-SAFE ROUTES
+        </button>
+
+        <!-- Candidate Routes Cards Container -->
+        <div class="candidate-routes-wrapper mt-3">
+          <div class="routes-section-title">
+            <span>CANDIDATE ROUTES EVALUATED</span>
+          </div>
+          <div id="candidate-routes-container" class="candidate-routes-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- 7-STEP HYDROLOGICAL WORKFLOW MODAL             -->
+    <!-- ============================================== -->
+    <div id="modal-workflow" class="modal-backdrop hidden">
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <div class="title-with-icon">
+            <i class="fa-solid fa-diagram-project text-cyan"></i>
+            <h3>DELHI OPERATIONAL HYDROLOGICAL NOWCAST WORKFLOW</h3>
+          </div>
+          <button id="btn-close-workflow-modal" class="panel-close-btn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body workflow-steps-grid">
+          <div class="workflow-step-card"><div class="step-num">01</div><h4>NASA SRTM 30m Elevation</h4><p>High-resolution digital elevation model processed with D8 flow routing algorithm.</p></div>
+          <div class="workflow-step-card"><div class="step-num">02</div><h4>IMD Doppler Weather Radar</h4><p>Live reflectivity from Palam & Safdarjung stations with 10-minute scan cadence.</p></div>
+          <div class="workflow-step-card"><div class="step-num">03</div><h4>Runoff Generation (NRCS-CN)</h4><p>Hydrologic soil groups mapped to determine rainfall excess.</p></div>
+          <div class="workflow-step-card"><div class="step-num">04</div><h4>1D Channel Drainage Network</h4><p>Hydrodynamic Saint-Venant 1D routing along 68 primary trunk drains.</p></div>
+          <div class="workflow-step-card"><div class="step-num">05</div><h4>Culvert & Sump Hydraulics</h4><p>Specialized hydraulic headloss computation at critical underpass bottlenecks.</p></div>
+          <div class="workflow-step-card"><div class="step-num">06</div><h4>2D Hydrodynamic Depth Raster</h4><p>High-resolution shallow water equations producing 0-3 hour depth maps.</p></div>
+          <div class="workflow-step-card highlight-step"><div class="step-num">07</div><h4>Multi-Source Edge Verification</h4><p>Cross-validation with Sentinel-1 SAR satellite maps, CCTV cameras, and IoT ultrasonic gauges.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- VERIFICATION EVIDENCE DRAWER                   -->
+    <!-- ============================================== -->
+    
+    <!-- ============================================== -->
+    <!-- AUTONOMOUS INFRASTRUCTURE & GATE OPTIMIZER      -->
+    <!-- ============================================== -->
+    <div id="drawer-infra-optimizer" class="drawer-panel hidden" style="width: 440px; z-index: 2100; overflow-y: auto;">
+      <div class="drawer-header" style="background: #0f172a; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.12); display: flex; justify-content: space-between; align-items: center;">
+        <div class="drawer-titles" style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #0284c7, #2563eb); display: flex; align-items: center; justify-content: center; color: #fff;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 13.5px; font-weight: 800; color: #ffffff; letter-spacing: 0.3px;">INFRASTRUCTURE AI OPTIMIZER</h3>
+            <p style="margin: 0; font-size: 11px; color: #94a3b8;">Autonomous Pump Dispatch &amp; Sluice Gate Control</p>
+          </div>
+        </div>
+        <button id="btn-close-infra-panel" class="panel-close-btn" title="Close Panel" style="background: none; border: none; color: #94a3b8; font-size: 18px; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="drawer-body" style="padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; color: #e2e8f0;">
+        <!-- 1. Infrastructure Status Pill Strip -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="infra-metric-card" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px;">
+            <div style="font-size: 11px; color: #94a3b8; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-fan text-green"></i> Municipal Pumps</div>
+            <div style="font-size: 15px; font-weight: 800; color: #fff; margin-top: 4px;" id="lbl-active-pumps-count">8 Monitored <span style="font-size: 11px; color: #10b981;">(6 Active)</span></div>
+          </div>
+          <div class="infra-metric-card" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px;">
+            <div style="font-size: 11px; color: #94a3b8; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bars-staggered text-cyan"></i> Sluice Barrages</div>
+            <div style="font-size: 15px; font-weight: 800; color: #fff; margin-top: 4px;" id="lbl-active-gates-count">4 Regulators <span style="font-size: 11px; color: #38bdf8;">(2 Open)</span></div>
+          </div>
+        </div>
+
+        <!-- 2. "Before AI vs After AI" Comparison Box -->
+        <div class="infra-compare-box" style="background: #1e293b; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 14px 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-weight: 800; font-size: 12.5px; color: #38bdf8; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-chart-simple"></i> BEFORE AI vs AFTER AI IMPACT
+            </div>
+            <span style="font-size: 10.5px; padding: 2px 8px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: 700;">-67% Flooding</span>
+          </div>
+
+          <!-- Flooded Area Visual Comparison Bar Chart -->
+          <div style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #cbd5e1; margin-bottom: 4px;">
+              <span><strong>Before AI</strong> (Manual Reactive Mode)</span>
+              <span style="font-weight: 800; color: #f87171;" id="comp-val-before">2.4 km²</span>
+            </div>
+            <div style="height: 14px; background: rgba(255,255,255,0.08); border-radius: 7px; overflow: hidden; position: relative;">
+              <div id="comp-bar-before" style="width: 100%; height: 100%; background: linear-gradient(90deg, #f87171, #ef4444); border-radius: 7px;"></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #cbd5e1; margin-bottom: 4px;">
+              <span><strong>After AI</strong> (Autonomous LP Schedule)</span>
+              <span style="font-weight: 800; color: #34d399;" id="comp-val-after">0.8 km² <span style="font-size: 10px;">(-1.6 km²)</span></span>
+            </div>
+            <div style="height: 14px; background: rgba(255,255,255,0.08); border-radius: 7px; overflow: hidden; position: relative;">
+              <div id="comp-bar-after" style="width: 33.3%; height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 7px; box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);"></div>
+            </div>
+          </div>
+
+          <!-- Quick Metrics Row -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+            <div>
+              <div style="font-size: 10.5px; color: #94a3b8;">Minto Sump Peak Depth</div>
+              <div style="font-size: 13px; font-weight: 700; color: #fff;" id="comp-depth-change">0.85m &rarr; <span style="color: #34d399;">0.22m</span></div>
+            </div>
+            <div>
+              <div style="font-size: 10.5px; color: #94a3b8;">Surcharged Outfalls</div>
+              <div style="font-size: 13px; font-weight: 700; color: #fff;" id="comp-drain-change">4 Drains &rarr; <span style="color: #34d399;">0 Clear</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Action Buttons -->
+        <div style="display: flex; gap: 10px;">
+          <button id="btn-apply-ai-schedule" class="subview-btn active" style="flex: 1; height: 42px; background: linear-gradient(135deg, #1d68ed, #0284c7); color: #fff; font-weight: 800; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Apply AI Schedule
+          </button>
+          <button id="btn-recompute-ai-schedule" class="subview-btn" style="height: 42px; padding: 0 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #e2e8f0; border-radius: 8px; cursor: pointer;" title="Recompute LP Model">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </div>
+
+        <!-- 4. Recommended AI Dispatch Schedule (Next 6 Hours) -->
+        <div>
+          <div style="font-size: 12.5px; font-weight: 800; color: #ffffff; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <span><i class="fa-solid fa-timeline text-blue"></i> Recommended Schedule (Next 6h)</span>
+            <span style="font-size: 10.5px; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 2px 7px; border-radius: 10px;">LP Simplex</span>
+          </div>
+
+          <div id="infra-schedule-list" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Timeline Item 1 -->
+            <div class="schedule-step-item" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-left: 3px solid #10b981; border-radius: 6px; padding: 10px 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-family: monospace; font-weight: 800; font-size: 12px; color: #38bdf8;">14:30</span>
+                <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #064e3b; color: #34d399;">PUMP ON</span>
+              </div>
+              <div style="font-weight: 700; font-size: 12px; color: #fff;">Pump #4 (Pul Prahladpur) &bull; 600 m³/h</div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 3px; line-height: 1.35;">Pre-evacuating railway underpass sump before +45 m³/h storm surge arrives.</div>
+            </div>
+
+            <!-- Timeline Item 2 -->
+            <div class="schedule-step-item" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-left: 3px solid #ef4444; border-radius: 6px; padding: 10px 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-family: monospace; font-weight: 800; font-size: 12px; color: #38bdf8;">15:00</span>
+                <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #7f1d1d; color: #f87171;">GATE CLOSE</span>
+              </div>
+              <div style="font-weight: 700; font-size: 12px; color: #fff;">Gate #2 (Wazirabad Outfall Flap)</div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 3px; line-height: 1.35;">Yamuna stage (205.85 m) exceeds drain invert; blocking river backflow into East Delhi.</div>
+            </div>
+
+            <!-- Timeline Item 3 -->
+            <div class="schedule-step-item" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-left: 3px solid #10b981; border-radius: 6px; padding: 10px 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-family: monospace; font-weight: 800; font-size: 12px; color: #38bdf8;">15:15</span>
+                <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #064e3b; color: #34d399;">PUMP ON</span>
+              </div>
+              <div style="font-weight: 700; font-size: 12px; color: #fff;">Pump #1 (Minto Bridge) &bull; 450 m³/h</div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 3px; line-height: 1.35;">Sump depth 0.85 m; running at full capacity to bring water level below 0.30 m.</div>
+            </div>
+
+            <!-- Timeline Item 4 -->
+            <div class="schedule-step-item" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-left: 3px solid #10b981; border-radius: 6px; padding: 10px 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-family: monospace; font-weight: 800; font-size: 12px; color: #38bdf8;">15:30</span>
+                <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #064e3b; color: #34d399;">PUMP ON</span>
+              </div>
+              <div style="font-weight: 700; font-size: 12px; color: #fff;">Pump #2 (ITO Ring Road) &bull; 380 m³/h</div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 3px; line-height: 1.35;">Preventing carriageway inundation near Vikas Marg junction.</div>
+            </div>
+
+            <!-- Timeline Item 5 -->
+            <div class="schedule-step-item" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-left: 3px solid #0284c7; border-radius: 6px; padding: 10px 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-family: monospace; font-weight: 800; font-size: 12px; color: #38bdf8;">16:00</span>
+                <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #0c4a6e; color: #38bdf8;">GATE OPEN</span>
+              </div>
+              <div style="font-weight: 700; font-size: 12px; color: #fff;">Gate #3 (ITO Drain Sluice) &bull; 140 m³/s</div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 3px; line-height: 1.35;">Flushing impounded stormwater by gravity into downstream Yamuna corridor.</div>
+            </div>
+
+            <!-- Timeline Item 6 -->
+            <div class="schedule-step-item" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-left: 3px solid #10b981; border-radius: 6px; padding: 10px 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-family: monospace; font-weight: 800; font-size: 12px; color: #38bdf8;">16:15</span>
+                <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #064e3b; color: #34d399;">PUMP ON</span>
+              </div>
+              <div style="font-weight: 700; font-size: 12px; color: #fff;">Pump #7 (AIIMS &amp; Barapullah) &bull; 420 m³/h</div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 3px; line-height: 1.35;">Safeguarding emergency access corridors and hospital culverts.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<div id="drawer-verification" class="drawer-panel hidden">
+      <div class="drawer-header">
+        <div class="drawer-titles">
+          <i class="fa-solid fa-circle-check text-green"></i>
+          <h3 id="drawer-title-text">GROUND TRUTH EVIDENCE</h3>
+        </div>
+        <button id="btn-close-verification-drawer" class="panel-close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="drawer-body">
+        <div id="view-evidence-satellite">
+          <h4>Sentinel-1 SAR Radar Inundation Overlay</h4>
+          <p class="evidence-meta">Resolution: 10m &bull; Orbit: Ascending Pass &bull; Timestamp: Live</p>
+        </div>
+        <div id="view-evidence-cctv" class="hidden">
+          <h4>Live Delhi Traffic CCTV Surveillance</h4>
+          <p class="evidence-meta">Optical Staff Gauge Level Detection</p>
+        </div>
+        <div id="view-evidence-iot" class="hidden">
+          <h4>Deployed IoT Ultrasonic Sump Gauges</h4>
+          <p class="evidence-meta">Ultrasonic Water Level Sensors</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="app-toast-container" class="toast-container"></div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Three.js OrbitControls -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Custom Application Scripts -->
+  <script src="/static/three-view.js?v=7.0"></script>
+  <script src="/static/app.js?v=7.0"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+# Supabase Project Configuration for Delhi Urban Flood Nowcasting System
+project_id = "kfbppkoioyuonzyqibra"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = true
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[storage]
+enabled = true
+file_size_limit = "5MB"
+
+[functions.api]
+verify_jwt = false
+
+[functions.ingest-weather]
+verify_jwt = false
+
+[functions.ingest-rainfall-satellite]
+verify_jwt = false
+
+[functions.ingest-satellite-scenes]
+verify_jwt = false
+
+[functions.ingest-river]
+verify_jwt = false
+
+[functions.telegram-bot]
+verify_jwt = false
+

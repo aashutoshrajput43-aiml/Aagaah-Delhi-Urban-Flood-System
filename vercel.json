@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://kfbppkoioyuonzyqibra.supabase.co/functions/v1/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/static/$1"
+    }
+  ]
+}
+

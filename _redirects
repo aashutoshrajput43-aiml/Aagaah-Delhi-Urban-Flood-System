@@ -1,0 +1,5 @@
+# Netlify Redirects for Delhi Urban Flood Nowcasting System
+/api/*  https://kfbppkoioyuonzyqibra.supabase.co/functions/v1/api/:splat  200!
+/       /static/index.html                                         200
+/*      /static/:splat                                             200
+
