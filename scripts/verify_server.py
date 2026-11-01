@@ -9,3 +9,4 @@ print("Has toggle-opt-drains:", 'id="toggle-opt-drains"' in html)
 print("Has alerts-card-highlighted:", 'alerts-card-highlighted' in html)
 print("Has card-situation-status:", 'id="card-situation-status"' in html)
 print("Has btn-quick-infra-optimizer (should be False):", 'btn-quick-infra-optimizer' in html)
+

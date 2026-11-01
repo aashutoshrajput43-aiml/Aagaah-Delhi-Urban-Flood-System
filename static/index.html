@@ -474,80 +474,52 @@
 
         <!-- BOTTOM ROW: 4 ANALYTICS CARDS (White Cards) -->
         <section class="bottom-analytics-row" id="bottom-analytics-bar">
-          <!-- 1. AI Infrastructure Optimizer Card -->
+          <!-- 1. AI Pump Optimizer Card -->
           <div class="analytics-card-white ai-optimizer-card" id="card-ai-infra-optimizer">
             <div class="analytics-head-row" style="margin-bottom: 6px;">
               <div class="opt-head-title">
                 <i class="fa-solid fa-wand-magic-sparkles text-cyan" style="font-size: 13px;"></i>
-                <h4 style="font-size: 13px; font-weight: 800; color: #0f172a; margin: 0;">AI Infrastructure Optimizer</h4>
+                <h4 style="font-size: 13px; font-weight: 800; color: #0f172a; margin: 0;">AI Pump Optimizer</h4>
               </div>
-              <span class="optimizer-badge-live" id="badge-optimizer-master"><span class="live-pulse-dot" style="background:#10b981; width:6px; height:6px;"></span> 3/3 ACTIVE</span>
+              <span class="optimizer-badge-live" id="badge-optimizer-master"><span class="live-pulse-dot" style="background:#10b981; width:6px; height:6px;"></span> ACTIVE</span>
             </div>
 
-            <div class="optimizer-controls-list">
-              <!-- Sub-Optimizer 1: Pump Optimizer -->
-              <div class="optimizer-row-item" id="row-opt-pumps" title="Autonomous Sump Dewatering Scheduling">
+            <div class="pump-optimizer-main-box">
+              <div class="pump-optimizer-hero-row" id="pump-hero-card-box" title="Click to view Pump Telemetry Drawer • Toggle to Show/Hide on Map">
                 <div class="opt-item-left">
-                  <div class="opt-icon-circle bg-blue-subtle">
-                    <i class="fa-solid fa-fan text-blue"></i>
+                  <div class="opt-icon-circle-lg bg-blue-subtle">
+                    <i class="fa-solid fa-fan text-blue pump-spin-animated" id="icon-pump-animated"></i>
                   </div>
-                  <div class="opt-info">
+                  <div class="opt-info" style="margin-left: 8px;">
                     <div class="opt-title-line">
-                      <span class="opt-name">Pump Optimizer</span>
+                      <span class="opt-name" style="font-size: 12.5px; font-weight: 800;">Smart Sump Pumps</span>
                       <span class="opt-tag" id="tag-opt-pumps">8 Pumps</span>
                     </div>
-                    <span class="opt-status-desc" id="status-opt-pumps-text">Auto-sequencing: 6 ON, 2 standby</span>
+                    <span class="opt-status-desc" id="status-opt-pumps-text" style="font-size: 10.5px; color: #059669; font-weight: 700;">
+                      ● All 8 Pumps Live on Map
+                    </span>
                   </div>
                 </div>
                 <div class="opt-item-right">
-                  <label class="switch-toggle" title="Toggle AI Autonomous Pump Scheduling">
+                  <label class="switch-toggle" style="width: 40px; height: 21px;" title="Toggle AI Pumps On/Off Map">
                     <input type="checkbox" id="toggle-opt-pumps" checked>
                     <span class="slider-toggle round"></span>
                   </label>
                 </div>
               </div>
 
-              <!-- Sub-Optimizer 2: Gate Optimizer -->
-              <div class="optimizer-row-item" id="row-opt-gates" title="Dynamic Barrage & Sluice Gate Modulator">
-                <div class="opt-item-left">
-                  <div class="opt-icon-circle bg-purple-subtle">
-                    <i class="fa-solid fa-bars-staggered text-purple"></i>
-                  </div>
-                  <div class="opt-info">
-                    <div class="opt-title-line">
-                      <span class="opt-name">Gate Optimizer</span>
-                      <span class="opt-tag" id="tag-opt-gates">4 Gates</span>
-                    </div>
-                    <span class="opt-status-desc" id="status-opt-gates-text">Modulating: 3 OPEN (85% flow)</span>
-                  </div>
+              <div class="pump-telemetry-metrics-grid">
+                <div class="pump-metric-chip">
+                  <span class="metric-chip-label">Active Capacity</span>
+                  <span class="metric-chip-val" id="val-pump-discharge" style="color: #2563eb;">12,400 m³/h</span>
                 </div>
-                <div class="opt-item-right">
-                  <label class="switch-toggle" title="Toggle AI Sluice Gate Modulator">
-                    <input type="checkbox" id="toggle-opt-gates" checked>
-                    <span class="slider-toggle round"></span>
-                  </label>
+                <div class="pump-metric-chip">
+                  <span class="metric-chip-label">Map Visibility</span>
+                  <span class="metric-chip-val" id="val-pump-map-status" style="color: #059669;">8 Visible</span>
                 </div>
-              </div>
-
-              <!-- Sub-Optimizer 3: Drain Optimizer -->
-              <div class="optimizer-row-item" id="row-opt-drains" title="Trunk Drain Hydrodynamic Overload Shield">
-                <div class="opt-item-left">
-                  <div class="opt-icon-circle bg-emerald-subtle">
-                    <i class="fa-solid fa-route text-emerald"></i>
-                  </div>
-                  <div class="opt-info">
-                    <div class="opt-title-line">
-                      <span class="opt-name">Drain Optimizer</span>
-                      <span class="opt-tag" id="tag-opt-drains">68 Drains</span>
-                    </div>
-                    <span class="opt-status-desc" id="status-opt-drains-text">Overload Shield: Bypass siphon ON</span>
-                  </div>
-                </div>
-                <div class="opt-item-right">
-                  <label class="switch-toggle" title="Toggle AI Drain Overload Shield">
-                    <input type="checkbox" id="toggle-opt-drains" checked>
-                    <span class="slider-toggle round"></span>
-                  </label>
+                <div class="pump-metric-chip">
+                  <span class="metric-chip-label">Relief Impact</span>
+                  <span class="metric-chip-val" style="color: #10b981;">-67% Flooding</span>
                 </div>
               </div>
             </div>

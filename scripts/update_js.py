@@ -307,3 +307,4 @@ else:
 with open('static/app.js', 'w', encoding='utf-8') as f:
     f.write(code)
 print("Successfully saved updated static/app.js")
+

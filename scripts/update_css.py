@@ -508,3 +508,4 @@ if target_norm in css_norm:
     print("Successfully updated static/app.css")
 else:
     print("Error: target not found in static/app.css")
+
