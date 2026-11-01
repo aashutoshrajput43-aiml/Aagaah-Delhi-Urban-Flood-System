@@ -118,3 +118,4 @@ if target_norm in css_norm:
     print("Successfully updated static/app.css with dedicated pump layout")
 else:
     print("Error: target not found in static/app.css")
+

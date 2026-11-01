@@ -73,3 +73,4 @@ def update_html(path):
 if __name__ == '__main__':
     update_html('static/index.html')
     update_html('index.html')
+
