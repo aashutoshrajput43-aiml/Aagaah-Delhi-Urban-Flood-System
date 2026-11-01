@@ -822,25 +822,36 @@ const ThreeEngine = {
   // RENDER & ANIMATION LOOP
   // ==========================================
   animate() {
-    // Only animate when 3D container is actually visible on screen
-    const container = document.getElementById('three-container') || this.container;
-    if (!container || container.offsetParent === null || container.classList.contains('hidden') || container.style.display === 'none') {
+    // Only animate when simulation workspace tab is open
+    const simTab = document.getElementById('tab-view-simulation');
+    if (!simTab || simTab.classList.contains('hidden') || simTab.style.display === 'none') {
       this.animId = null;
       return;
     }
+
+    const viewFlood = document.getElementById('view-3d-flood');
+    const viewElev = document.getElementById('view-3d-elevation');
+    const isFloodVisible = viewFlood && !viewFlood.classList.contains('hidden') && viewFlood.style.display !== 'none';
+    const isElevVisible = viewElev && !viewElev.classList.contains('hidden') && viewElev.style.display !== 'none';
+
+    if (!isFloodVisible && !isElevVisible) {
+      this.animId = null;
+      return;
+    }
+
     this.animId = requestAnimationFrame(() => this.animate());
 
     const delta = this.clock ? this.clock.getDelta() : 0.016;
     const time = this.clock ? this.clock.getElapsedTime() : (Date.now() * 0.001);
 
-    if (this.elevControls) this.elevControls.update();
-    if (this.floodControls) this.floodControls.update();
+    if (isElevVisible && this.elevControls) this.elevControls.update();
+    if (isFloodVisible && this.floodControls) this.floodControls.update();
 
     // 1. Smooth Lerp of Water Elevation
     this.currentWaterY += (this.baseTargetWaterY - this.currentWaterY) * 0.06;
 
     // 2. Water Surface Wave Ripples
-    if (this.floodWaterMesh && this.floodWaterGeom && this.floodWaterPositionsOrig) {
+    if (isFloodVisible && this.floodWaterMesh && this.floodWaterGeom && this.floodWaterPositionsOrig) {
       this.floodWaterMesh.position.y = this.currentWaterY;
       const pos = this.floodWaterGeom.attributes.position;
       const count = pos.count;
@@ -857,36 +868,28 @@ const ThreeEngine = {
     }
 
     // 3. Falling Rain Particles
-    if (this.rainSystem && this.rainPositions && this.rainVelocities) {
-      const count = this.rainCount;
+    if (isFloodVisible && this.rainSystem && this.rainPositions && this.rainVelocities) {
       const pos = this.rainPositions;
       const vel = this.rainVelocities;
-      const fallSpeedMult = this.currentRainfall > 0 ? (this.isSimPlaying ? 1.3 : 0.85) : 0.0;
+      const count = this.rainCount;
+      const speedMult = this.isSimPlaying ? 1.4 : 1.0;
 
       for (let i = 0; i < count; i++) {
-        pos[i * 3 + 0] += vel[i * 3 + 0] * fallSpeedMult;
-        pos[i * 3 + 1] += vel[i * 3 + 1] * fallSpeedMult;
-        pos[i * 3 + 2] += vel[i * 3 + 2] * fallSpeedMult;
-
-        const x = pos[i * 3 + 0];
-        const z = pos[i * 3 + 2];
-        const groundY = this.sampleTerrainElevation(x, z);
-
-        // Reset particle to top of sky when it hits ground or water
-        if (pos[i * 3 + 1] < Math.max(groundY, this.currentWaterY)) {
-          pos[i * 3 + 0] = (Math.random() - 0.5) * 220;
-          pos[i * 3 + 1] = 140 + Math.random() * 30;
-          pos[i * 3 + 2] = (Math.random() - 0.5) * 220;
+        pos[i * 3 + 1] -= vel[i] * speedMult;
+        if (pos[i * 3 + 1] < this.currentWaterY) {
+          pos[i * 3 + 1] = 65 + Math.random() * 25;
+          pos[i * 3 + 0] = (Math.random() - 0.5) * 200;
+          pos[i * 3 + 2] = (Math.random() - 0.5) * 200;
         }
       }
       this.rainSystem.geometry.attributes.position.needsUpdate = true;
     }
 
-    // 4. In-Terrain Gravity Flow Runoff Particles (Water Shifting Downslope)
-    if (this.flowSystem && this.flowPositions && this.flowVelocities) {
-      const count = this.flowCount;
+    // 4. In-Terrain Gravity Flow Runoff Particles
+    if (isFloodVisible && this.flowSystem && this.flowPositions && this.flowVelocities) {
       const pos = this.flowPositions;
       const vel = this.flowVelocities;
+      const count = this.flowCount;
       const flowMult = this.isSimPlaying ? 1.2 : 0.7;
 
       for (let i = 0; i < count; i++) {
@@ -913,7 +916,7 @@ const ThreeEngine = {
     }
 
     // 5. Pulsing Hotspot Warning Rings
-    if (this.hotspotRings.length > 0) {
+    if (isFloodVisible && this.hotspotRings.length > 0) {
       const isSurcharged = this.currentRainfall >= 50;
       this.hotspotRings.forEach(item => {
         item.mesh.visible = isSurcharged;
@@ -928,7 +931,7 @@ const ThreeEngine = {
     }
 
     // 6. Surcharge Tube Pulsing Glow
-    if (this.currentRainfall >= 50) {
+    if (isFloodVisible && this.currentRainfall >= 50) {
       const pulse = 0.75 + 0.25 * Math.sin(time * 5.0);
       this.floodTubes.forEach(tube => {
         if (tube.material.color.getHex() === 0xef4444) {
@@ -938,10 +941,10 @@ const ThreeEngine = {
     }
 
     // 7. Render Active Views
-    if (this.elevRenderer && this.elevScene && this.elevCamera) {
+    if (isElevVisible && this.elevRenderer && this.elevScene && this.elevCamera) {
       this.elevRenderer.render(this.elevScene, this.elevCamera);
     }
-    if (this.floodRenderer && this.floodScene && this.floodCamera) {
+    if (isFloodVisible && this.floodRenderer && this.floodScene && this.floodCamera) {
       this.floodRenderer.render(this.floodScene, this.floodCamera);
     }
   },
@@ -1079,9 +1082,13 @@ const HydroRadarEngine2D = {
   },
 
   animate() {
-    // Only render when radar canvas is mounted and visible
+    // Only render when radar canvas and 2D view are active and visible
+    const simTab = document.getElementById('tab-view-simulation');
+    const view2D = document.getElementById('view-2d-hydro');
     const canvas = document.getElementById('canvas-2d-hydro-radar') || this.canvas;
-    if (!canvas || canvas.offsetParent === null) {
+    const isVisible = simTab && !simTab.classList.contains('hidden') && view2D && !view2D.classList.contains('hidden');
+
+    if (!isVisible || !canvas) {
       this.animId = null;
       return;
     }

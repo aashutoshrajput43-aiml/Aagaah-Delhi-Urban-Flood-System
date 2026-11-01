@@ -1714,6 +1714,14 @@ const App = {
       this.updateFloodRiskDonut(mm, horizon);
       this.updateRecentAlertsStream(mm);
 
+      // Update Simulation Lab Real-Time Telemetry
+      const labDepth = document.getElementById('sim-lab-peak-depth');
+      if (labDepth) labDepth.textContent = `${data.max_depth_m} m`;
+      const labArea = document.getElementById('sim-lab-flooded-area');
+      if (labArea) labArea.textContent = `${data.flooded_area_km2} km²`;
+      const labDrains = document.getElementById('sim-lab-overloaded-drains');
+      if (labDrains) labDrains.textContent = `${data.overloaded_drains} / 8`;
+
       // Update TOP KPI CARDS matching screenshot
       const kpiRain = document.getElementById('kpi-current-rainfall');
       if (kpiRain) kpiRain.textContent = `${data.rainfall_scenario_mm} mm`;
@@ -2950,16 +2958,23 @@ const App = {
       this.showToast('Switched to Flood Operations Dashboard', 'house');
     } else if (tabKey === 'simulation') {
       setTimeout(() => {
+        const view2D = document.getElementById('view-2d-hydro');
         if (window.ThreeEngine) {
           window.ThreeEngine.onWindowResize();
           window.ThreeEngine.updateRainfallScenario(this.currentRainfall);
+          if (!window.ThreeEngine.animId) {
+            window.ThreeEngine.animate();
+          }
         }
-        if (window.HydroRadarEngine2D) {
+        if (window.HydroRadarEngine2D && view2D && !view2D.classList.contains('hidden')) {
           window.HydroRadarEngine2D.init('canvas-2d-hydro-radar');
           window.HydroRadarEngine2D.resize();
           window.HydroRadarEngine2D.setScenario(this.currentRainfall, this.currentHorizon, this.simPlaying);
+          if (!window.HydroRadarEngine2D.animId) {
+            window.HydroRadarEngine2D.animate();
+          }
         }
-      }, 120);
+      }, 60);
       this.showToast('Simulation Lab Active: 3D Hydrodynamic Solver', 'play');
     } else if (tabKey === 'analytics') {
       this.showToast('Hydrological & Drainage Basin Analytics Active', 'chart-column');
@@ -2996,7 +3011,10 @@ const App = {
       if (mode === 'flood') {
         if (btnModeFlood) btnModeFlood.classList.add('active');
         if (viewFlood) viewFlood.classList.remove('hidden');
-        if (window.ThreeEngine) window.ThreeEngine.onWindowResize();
+        if (window.ThreeEngine) {
+          window.ThreeEngine.onWindowResize();
+          if (!window.ThreeEngine.animId) window.ThreeEngine.animate();
+        }
       } else if (mode === '2d') {
         if (btnMode2D) btnMode2D.classList.add('active');
         if (view2D) view2D.classList.remove('hidden');
@@ -3004,11 +3022,15 @@ const App = {
           window.HydroRadarEngine2D.init('canvas-2d-hydro-radar');
           window.HydroRadarEngine2D.resize();
           window.HydroRadarEngine2D.setScenario(this.currentRainfall, this.currentHorizon, this.simPlaying);
+          if (!window.HydroRadarEngine2D.animId) window.HydroRadarEngine2D.animate();
         }
       } else if (mode === 'elev') {
         if (btnModeElev) btnModeElev.classList.add('active');
         if (viewElev) viewElev.classList.remove('hidden');
-        if (window.ThreeEngine) window.ThreeEngine.onWindowResize();
+        if (window.ThreeEngine) {
+          window.ThreeEngine.onWindowResize();
+          if (!window.ThreeEngine.animId) window.ThreeEngine.animate();
+        }
       }
     };
 
