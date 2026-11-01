@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: aagaah-delhi-flood-system
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python server.py"
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8

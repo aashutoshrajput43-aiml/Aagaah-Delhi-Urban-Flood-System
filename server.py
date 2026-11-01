@@ -1960,6 +1960,8 @@ class FloodAppRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def run():
+    # Enable socket address reuse
+    http.server.ThreadingHTTPServer.allow_reuse_address = True
     # Try finding an open port starting from PORT
     port = PORT
     for attempt in range(10):
