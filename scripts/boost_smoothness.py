@@ -335,3 +335,4 @@ if "GPU HARDWARE ACCELERATION" not in app_css:
     with open('static/app.css', 'a', encoding='utf-8') as f:
         f.write(gpu_css)
     print("Added GPU hardware acceleration rules to static/app.css")
+

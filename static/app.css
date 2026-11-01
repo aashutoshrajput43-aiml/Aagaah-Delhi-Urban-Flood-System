@@ -1074,16 +1074,19 @@ body {
 .donut-seg-safe {
   fill: none;
   stroke: #10b981;
+  transition: stroke-dasharray 0.35s cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .donut-seg-mod {
   fill: none;
   stroke: #f59e0b;
+  transition: stroke-dasharray 0.35s cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .donut-seg-high {
   fill: none;
   stroke: #ef4444;
+  transition: stroke-dasharray 0.35s cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .donut-center-pct {
